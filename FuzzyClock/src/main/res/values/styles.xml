@@ -5,4 +5,16 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="fuzzy_bold">
+        <item name="android:textSize">@dimen/fuzzy_font_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="fuzzy_regular">
+        <item name="android:textSize">@dimen/fuzzy_font_size</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
 </resources>

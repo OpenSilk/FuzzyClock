@@ -1,0 +1,11 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="screensaver_margin">16dip</dimen>
+    <dimen name="time_margin_top">32dip</dimen>
+    <dimen name="digital_margin_bottom">24dip</dimen>
+    <dimen name="fuzzy_font_size">28sp</dimen>
+
+</resources>

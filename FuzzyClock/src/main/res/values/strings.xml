@@ -1,3 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">FuzzyClock</string>
+
+    <!-- Fuzzy Clock Resources -->
+    <string name="fuzzy_one">ONE</string>
+    <string name="fuzzy_two">TWO</string>
+    <string name="fuzzy_three">THREE</string>
+    <string name="fuzzy_four">FOUR</string>
+    <string name="fuzzy_five">FIVE</string>
+    <string name="fuzzy_six">SIX</string>
+    <string name="fuzzy_seven">SEVEN</string>
+    <string name="fuzzy_eight">EIGHT</string>
+    <string name="fuzzy_nine">NINE</string>
+    <string name="fuzzy_ten">TEN</string>
+    <string name="fuzzy_eleven">ELEVEN</string>
+    <string name="fuzzy_twelve">TWELVE</string>
+    <string name="fuzzy_thirteen">THIRTEEN</string>
+    <string name="fuzzy_fourteen">FOURTEEN</string>
+    <string name="fuzzy_fifteen">FIFTEEN</string>
+    <string name="fuzzy_sixteen">SIXTEEN</string>
+    <string name="fuzzy_seventeen">SEVENTEEN</string>
+    <string name="fuzzy_eighteen">EIGHTEEN</string>
+    <string name="fuzzy_nineteen">NINETEEN</string>
+    <string name="fuzzy_twenty">TWENTY</string>
+
+    <string name="fuzzy_half">HALF</string>
+    <string name="fuzzy_hundred">HUNDRED</string>
+    <string name="fuzzy_midnight">MIDNIGHT</string>
+    <string name="fuzzy_noon">NOON</string>
+    <string name="fuzzy_oclock">O\'CLOCK</string>
+    <string name="fuzzy_past">PAST</string>
+    <string name="fuzzy_quarter">QUARTER</string>
+    <string name="fuzzy_to">TO</string>
 </resources>

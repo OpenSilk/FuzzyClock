@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="time_margin_top">32dip</dimen>
+    <dimen name="fuzzy_font_size">72sp</dimen>
+
+</resources>

@@ -1,15 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.opensilk.fuzzyclock"
-    android:versionCode="1"
-    android:versionName="1.0">
+    android:versionCode="0001"
+    android:versionName="0.1" >
 
-    <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="18" />
+    <uses-sdk
+        android:minSdkVersion="17"
+        android:targetSdkVersion="18" />
 
-    <application android:allowBackup="true"
-        android:label="@string/app_name"
+    <application
+        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/AppTheme">
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+
+        <service
+            android:name="org.opensilk.fuzzyclock.FuzzyDreams"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
 
     </application>
-
 </manifest>

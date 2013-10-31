@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="time_margin_top">48dip</dimen>
+    <dimen name="digital_margin_bottom">36dip</dimen>
+    <dimen name="screensaver_margin">20dip</dimen>
+    <dimen name="fuzzy_font_size">48sp</dimen>
+</resources>

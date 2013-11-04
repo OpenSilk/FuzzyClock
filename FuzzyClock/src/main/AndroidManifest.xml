@@ -17,6 +17,7 @@
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="org.opensilk.action.POKE_SERVICE"/>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/fuzzy_widget"/>

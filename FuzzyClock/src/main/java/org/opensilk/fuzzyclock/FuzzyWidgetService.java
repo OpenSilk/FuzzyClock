@@ -3,6 +3,7 @@ package org.opensilk.fuzzyclock;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,9 +14,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.TimeZone;
 
 public class FuzzyWidgetService extends Service {
@@ -29,7 +28,6 @@ public class FuzzyWidgetService extends Service {
 
     private boolean m24HourFormat;
     private String mTimeZoneId;
-    List<Integer> mWidgetIds = new ArrayList<Integer>();
 
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
@@ -83,27 +81,6 @@ public class FuzzyWidgetService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent.getAction();
-        if (LOGV) Log.v(TAG, "onStartCommand: action=" + action);
-
-        if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)) {
-            int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-            for (int id : ids) {
-                if (!mWidgetIds.contains(id)) {
-                    if (LOGV) Log.v(TAG, "Adding widget id=" + id);
-                    mWidgetIds.add(id);
-                }
-            }
-        } else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
-            int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-            for (int id : ids) {
-                if (mWidgetIds.contains((Integer)id)) {
-                    if (LOGV) Log.v(TAG, "Removing widget id=" + id);
-                    mWidgetIds.remove((Integer)id);
-                }
-            }
-        }
-
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -111,7 +88,7 @@ public class FuzzyWidgetService extends Service {
             }
         });
 
-        return START_REDELIVER_INTENT;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -129,10 +106,6 @@ public class FuzzyWidgetService extends Service {
     }
 
     private void updateTime() {
-        if (mWidgetIds.isEmpty()) {
-            stopSelf();
-        }
-
         mCalendar.setTimeInMillis(System.currentTimeMillis());
 
         if (mTimeZoneId != null) {
@@ -261,13 +234,15 @@ public class FuzzyWidgetService extends Service {
 
         AppWidgetManager appManager = AppWidgetManager.getInstance(mContext);
 
-        int[] ids = new int[mWidgetIds.size()];
-        for (int ii = 0; ii< ids.length; ii++) {
-            ids[ii] = mWidgetIds.get(ii);
-            if (LOGV) Log.v(TAG, "Updating widget id=" + ids[ii]);
-        }
 
-        appManager.updateAppWidget(ids, views);
+        int[] widgetIds = appManager.getAppWidgetIds(new ComponentName(mContext, FuzzyWidget.class));
+        if (widgetIds != null && widgetIds.length > 0) {
+            if (LOGV) for (int id: widgetIds) Log.v(TAG, "Updating widget id=" + id);
+            appManager.updateAppWidget(widgetIds, views);
+        } else {
+            Log.i(TAG, "No widgets left to update... Stopping service");
+            stopSelf();
+        }
     }
 
     private void setDateFormat() {

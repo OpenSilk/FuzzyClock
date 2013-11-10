@@ -17,13 +17,11 @@
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-                <action android:name="org.opensilk.action.POKE_SERVICE"/>
+                <action android:name="org.opensilk.action.UPDATE_FUZZY_WIDGET"/>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/fuzzy_widget"/>
         </receiver>
-
-        <service android:name="org.opensilk.fuzzyclock.FuzzyWidgetService"/>
 
         <service
             android:name="org.opensilk.fuzzyclock.FuzzyDreams"

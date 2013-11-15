@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2013 OpenSilk Productions LLC
+ *
+ *  This file is part of Fuzzy Clock
+ *
+ *  Fuzzy Clock is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  Fuzzy Clock is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.opensilk.fuzzyclock;
 
 import android.app.AlarmManager;
@@ -22,7 +39,12 @@ public class FuzzyWidget extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (ACTION_UPDATE_WIDGET.equals(action)) {
+        if (Intent.ACTION_DATE_CHANGED.equals(action) ||
+                Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
+                Intent.ACTION_SCREEN_ON.equals(action) ||
+                Intent.ACTION_TIME_CHANGED.equals(action) ||
+                Intent.ACTION_LOCALE_CHANGED.equals(action) ||
+                ACTION_UPDATE_WIDGET.equals(action)) {
             updateTime(context);
         } else {
             super.onReceive(context, intent);

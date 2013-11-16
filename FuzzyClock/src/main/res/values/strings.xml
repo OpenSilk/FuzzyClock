@@ -18,7 +18,7 @@
 -->
 <resources>
 
-    <string name="app_name">FuzzyClock</string>
+    <string name="app_name">Fuzzy Clock</string>
 
     <!-- Fuzzy Clock Resources -->
     <string name="fuzzy_one">ONE</string>

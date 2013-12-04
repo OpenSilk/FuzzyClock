@@ -24,10 +24,11 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import java.util.Calendar;
+import hugo.weaving.DebugLog;
 
 public class FuzzyWidget extends AppWidgetProvider {
 
@@ -38,6 +39,7 @@ public class FuzzyWidget extends AppWidgetProvider {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (LOGV) Log.v(TAG, "onReceive");
         String action = intent.getAction();
         if (Intent.ACTION_DATE_CHANGED.equals(action) ||
                 Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
@@ -69,6 +71,7 @@ public class FuzzyWidget extends AppWidgetProvider {
         cancelNextAlarm(context);
     }
 
+    @DebugLog
     void setNextAlarm(Context context) {
         FuzzyLogic fuzzyLogic = new FuzzyLogic();
         fuzzyLogic.setDateFormat(true); // use 24h
@@ -79,10 +82,15 @@ public class FuzzyWidget extends AppWidgetProvider {
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
-        am.set(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            am.setExact(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+        } else {
+            am.set(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+        }
         Log.i(TAG, "Scheduled next clock update for " + (nextMilli/1000) + "s from now");
     }
 
+    @DebugLog
     void cancelNextAlarm(Context context) {
         Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -90,6 +98,7 @@ public class FuzzyWidget extends AppWidgetProvider {
         am.cancel(pi);
     }
 
+    @DebugLog
     private void updateTime(Context context) {
         FuzzyLogic fuzzyLogic = new FuzzyLogic();
         fuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(context));

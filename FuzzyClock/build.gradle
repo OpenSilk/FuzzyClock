@@ -4,21 +4,23 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.6.+'
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.0.0'
     }
 }
 apply plugin: 'android'
+apply plugin: 'hugo'
 
 repositories {
     mavenCentral()
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.1.0"
+    compileSdkVersion 19
+    buildToolsVersion "19.0.0"
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 18
+        targetSdkVersion 19
     }
 
     buildTypes {

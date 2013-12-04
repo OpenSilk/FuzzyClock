@@ -33,6 +33,8 @@ import android.widget.TextView;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import hugo.weaving.DebugLog;
+
 public class FuzzyClockView extends LinearLayout {
 
     private static final String TAG = FuzzyClockView.class.getSimpleName();
@@ -99,11 +101,10 @@ public class FuzzyClockView extends LinearLayout {
         setDateFormat();
     }
 
+    @DebugLog
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-
-        Log.v(TAG, "onAttachedToWindow");
 
         if (mAttached) return;
         mAttached = true;
@@ -125,6 +126,7 @@ public class FuzzyClockView extends LinearLayout {
         updateTime();
     }
 
+    @DebugLog
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -154,6 +156,7 @@ public class FuzzyClockView extends LinearLayout {
         updateTime();
     }
 
+    @DebugLog
     private void updateTime() {
         if (mLive) {
             mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());

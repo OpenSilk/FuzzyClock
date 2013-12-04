@@ -23,6 +23,8 @@ import android.service.dreams.DreamService;
 import android.util.Log;
 import android.view.View;
 
+import hugo.weaving.DebugLog;
+
 public class FuzzyDreams extends DreamService {
 
     static final String TAG = FuzzyDreams.class.getSimpleName();
@@ -39,24 +41,24 @@ public class FuzzyDreams extends DreamService {
         mMoveSaverRunnable = new ScreenSaverAnimation(mHandler);
     }
 
+    @DebugLog
     @Override
     public void onCreate() {
-        if (LOGV) Log.v(TAG, "Screensaver created");
         super.onCreate();
     }
 
+    @DebugLog
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (LOGV) Log.v(TAG, "Screensaver configuration changed");
         super.onConfigurationChanged(newConfig);
         mHandler.removeCallbacks(mMoveSaverRunnable);
         setLayout();
         mHandler.post(mMoveSaverRunnable);
     }
 
+    @DebugLog
     @Override
     public void onAttachedToWindow() {
-        if (LOGV) Log.v(TAG, "Screensaver attached to window");
         super.onAttachedToWindow();
 
         // We want the screen saver to exit upon user interaction.
@@ -69,9 +71,9 @@ public class FuzzyDreams extends DreamService {
         mHandler.post(mMoveSaverRunnable);
     }
 
+    @DebugLog
     @Override
     public void onDetachedFromWindow() {
-        if (LOGV) Log.v(TAG, "Screensaver detached from window");
         super.onDetachedFromWindow();
 
         mHandler.removeCallbacks(mMoveSaverRunnable);

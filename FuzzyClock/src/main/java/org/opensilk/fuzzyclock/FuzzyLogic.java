@@ -38,7 +38,7 @@ public class FuzzyLogic {
 
     public boolean hasChanged() {
         return getMinutesState(previousMinutes) != getMinutesState(minutes)
-                && previousHours != hours;
+                || previousHours != hours;
     }
 
     private int getMinutesState(int minutes) {

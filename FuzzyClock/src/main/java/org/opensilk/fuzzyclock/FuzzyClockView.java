@@ -21,9 +21,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.ContentObserver;
 //import android.graphics.Typeface;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -46,6 +48,7 @@ public class FuzzyClockView extends LinearLayout {
     private boolean mAttached;
     //private final Typeface mRoboto;
     private String mTimeZoneId;
+    private SharedPreferences mPrefs;
 
 
     /* called by system on minute ticks */
@@ -83,13 +86,14 @@ public class FuzzyClockView extends LinearLayout {
 
     public FuzzyClockView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         //mRoboto = Typeface.createFromAsset(context.getAssets(),"fonts/Roboto-Regular.ttf");
     }
 
+    @DebugLog
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
         mTimeDisplayHours = (TextView)findViewById(R.id.timeDisplayHours);
         //mTimeDisplayHours.setTypeface(mRoboto);
         mTimeDisplayMinutes = (TextView)findViewById(R.id.timeDisplayMinutes);
@@ -97,7 +101,7 @@ public class FuzzyClockView extends LinearLayout {
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
         //mTimeDisplaySeparator.setTypeface(mRoboto);
         mFuzzyLogic.setCalendar(Calendar.getInstance());
-
+        updateColors();
         setDateFormat();
     }
 
@@ -189,11 +193,18 @@ public class FuzzyClockView extends LinearLayout {
         setContentDescription(fullTimeStr);
     }
 
+    @DebugLog
+    public void updateColors() {
+        mTimeDisplayMinutes.setTextColor(getResources().getColor(mPrefs.getInt("minutes_color_val", android.R.color.white)));
+        mTimeDisplayHours.setTextColor(getResources().getColor(mPrefs.getInt("hours_color_val", android.R.color.white)));
+        mTimeDisplaySeparator.setTextColor(getResources().getColor(mPrefs.getInt("separator_color_val", android.R.color.holo_blue_light)));
+    }
+
     private void setDateFormat() {
         mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
     }
 
-    void setLive(boolean live) {
+    public void setLive(boolean live) {
         mLive = live;
     }
 

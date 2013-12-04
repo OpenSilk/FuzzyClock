@@ -23,6 +23,7 @@
     android:updatePeriodMillis="0"
     android:previewImage="@drawable/ic_launcher"
     android:initialLayout="@layout/fuzzy_widget"
+    android:configure="org.opensilk.fuzzyclock.FuzzySettings"
     android:widgetCategory="home_screen|keyguard">
 
 </appwidget-provider>

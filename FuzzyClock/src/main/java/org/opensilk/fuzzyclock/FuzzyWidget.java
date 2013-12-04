@@ -24,7 +24,9 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -35,7 +37,7 @@ public class FuzzyWidget extends AppWidgetProvider {
     private static final String TAG = FuzzyWidget.class.getSimpleName();
     private static final boolean LOGV = true;
 
-    private static final String ACTION_UPDATE_WIDGET = "org.opensilk.action.UPDATE_FUZZY_WIDGET";
+    public static final String ACTION_UPDATE_WIDGET = "org.opensilk.action.UPDATE_FUZZY_WIDGET";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -71,7 +73,6 @@ public class FuzzyWidget extends AppWidgetProvider {
         cancelNextAlarm(context);
     }
 
-    @DebugLog
     void setNextAlarm(Context context) {
         FuzzyLogic fuzzyLogic = new FuzzyLogic();
         fuzzyLogic.setDateFormat(true); // use 24h
@@ -90,7 +91,6 @@ public class FuzzyWidget extends AppWidgetProvider {
         Log.i(TAG, "Scheduled next clock update for " + (nextMilli/1000) + "s from now");
     }
 
-    @DebugLog
     void cancelNextAlarm(Context context) {
         Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -112,8 +112,17 @@ public class FuzzyWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.fuzzy_widget);
 
         views.setTextViewText(R.id.timeDisplayMinutes, timeM);
-        views.setTextViewText(R.id.timeDisplaySeparator, separator);
         views.setTextViewText(R.id.timeDisplayHours, timeH);
+        views.setTextViewText(R.id.timeDisplaySeparator, separator);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        views.setTextColor(R.id.timeDisplayMinutes,
+                context.getResources().getColor(prefs.getInt("minutes_color_val", android.R.color.white)));
+        views.setTextColor(R.id.timeDisplayHours,
+                context.getResources().getColor(prefs.getInt("hours_color_val", android.R.color.white)));
+        views.setTextColor(R.id.timeDisplaySeparator,
+                context.getResources().getColor(prefs.getInt("separator_color_val", android.R.color.holo_blue_light)));
 
         AppWidgetManager appManager = AppWidgetManager.getInstance(context);
 

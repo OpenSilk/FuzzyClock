@@ -19,6 +19,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="40dp"
+    android:resizeMode="horizontal"
     android:updatePeriodMillis="0"
     android:previewImage="@drawable/ic_launcher"
     android:initialLayout="@layout/fuzzy_widget"

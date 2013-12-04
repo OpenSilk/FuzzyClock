@@ -22,7 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
-import android.graphics.Typeface;
+//import android.graphics.Typeface;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -37,13 +37,12 @@ public class FuzzyClockView extends LinearLayout {
 
     private static final String TAG = FuzzyClockView.class.getSimpleName();
 
-    private Calendar mCalendar;
-    private boolean m24HourFormat;
+    private FuzzyLogic mFuzzyLogic = new FuzzyLogic();
     private TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;
     private boolean mAttached;
-    private final Typeface mRoboto;
+    //private final Typeface mRoboto;
     private String mTimeZoneId;
 
 
@@ -54,7 +53,7 @@ public class FuzzyClockView extends LinearLayout {
         public void onReceive(Context context, Intent intent) {
             if (mLive && intent.getAction().equals(
                     Intent.ACTION_TIMEZONE_CHANGED)) {
-                mCalendar = Calendar.getInstance();
+                mFuzzyLogic.setCalendar(Calendar.getInstance());
             }
             // Post a runnable to avoid blocking the broadcast.
             mHandler.post(new Runnable() {
@@ -82,7 +81,7 @@ public class FuzzyClockView extends LinearLayout {
 
     public FuzzyClockView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mRoboto = Typeface.createFromAsset(context.getAssets(),"fonts/Roboto-Regular.ttf");
+        //mRoboto = Typeface.createFromAsset(context.getAssets(),"fonts/Roboto-Regular.ttf");
     }
 
     @Override
@@ -90,12 +89,12 @@ public class FuzzyClockView extends LinearLayout {
         super.onFinishInflate();
 
         mTimeDisplayHours = (TextView)findViewById(R.id.timeDisplayHours);
-        mTimeDisplayHours.setTypeface(mRoboto);
+        //mTimeDisplayHours.setTypeface(mRoboto);
         mTimeDisplayMinutes = (TextView)findViewById(R.id.timeDisplayMinutes);
-        mTimeDisplayMinutes.setTypeface(mRoboto);
+        //mTimeDisplayMinutes.setTypeface(mRoboto);
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
-        mTimeDisplaySeparator.setTypeface(mRoboto);
-        mCalendar = Calendar.getInstance();
+        //mTimeDisplaySeparator.setTypeface(mRoboto);
+        mFuzzyLogic.setCalendar(Calendar.getInstance());
 
         setDateFormat();
     }
@@ -142,7 +141,7 @@ public class FuzzyClockView extends LinearLayout {
 
 
     void updateTime(Calendar c) {
-        mCalendar = c;
+        mFuzzyLogic.setCalendar(c);
         updateTime();
     }
 
@@ -151,155 +150,28 @@ public class FuzzyClockView extends LinearLayout {
         final Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.MINUTE, minute);
-        mCalendar = c;
+        mFuzzyLogic.setCalendar(c);
         updateTime();
     }
 
-    int mPrevMinState;
-    int mPrevHours;
-
     private void updateTime() {
         if (mLive) {
-            mCalendar.setTimeInMillis(System.currentTimeMillis());
+            mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
         }
         if (mTimeZoneId != null) {
-            mCalendar.setTimeZone(TimeZone.getTimeZone(mTimeZoneId));
+            mFuzzyLogic.getCalendar().setTimeZone(TimeZone.getTimeZone(mTimeZoneId));
         }
 
-        int minState, minutes, hours;
-        minutes = mCalendar.get(Calendar.MINUTE);
-        hours = mCalendar.get(m24HourFormat ? Calendar.HOUR_OF_DAY : Calendar.HOUR);
+        mFuzzyLogic.updateTime();
 
-        if        (minutes >= 56) { minState = 1;
-        } else if (minutes >= 51) { minState = 2;
-        } else if (minutes >= 46) { minState = 3;
-        } else if (minutes >= 41) { minState = 4;
-        } else if (minutes >= 36) { minState = 5;
-        } else if (minutes >= 25) { minState = 6;
-        } else if (minutes >= 20) { minState = 7;
-        } else if (minutes >= 15) { minState = 8;
-        } else if (minutes >= 10) { minState = 9;
-        } else if (minutes >= 5)  { minState = 10;
-        } else                    { minState = 1;
+        if (!mFuzzyLogic.hasChanged()) {
+            return;
         }
 
-        if (mPrevMinState == minState && mPrevHours == hours) {
-            return; // No change;
-        }
-
-        mPrevMinState = minState;
-        mPrevHours = hours;
-
-        Context context = getContext();
-        CharSequence timeH, timeM, separator;
-        StringBuilder fullTimeStr = new StringBuilder();
-
-        if        (minutes >= 56) { timeM = ""; // O'CLOCK
-        } else if (minutes >= 51) { timeM = context.getString(R.string.fuzzy_five);
-        } else if (minutes >= 46) { timeM = context.getString(R.string.fuzzy_ten);
-        } else if (minutes >= 41) { timeM = context.getString(R.string.fuzzy_quarter);
-        } else if (minutes >= 36) { timeM = context.getString(R.string.fuzzy_twenty);
-        } else if (minutes >= 25) { timeM = context.getString(R.string.fuzzy_half);
-        } else if (minutes >= 20) { timeM = context.getString(R.string.fuzzy_twenty);
-        } else if (minutes >= 15) { timeM = context.getString(R.string.fuzzy_quarter);
-        } else if (minutes >= 10) { timeM = context.getString(R.string.fuzzy_ten);
-        } else if (minutes >= 5)  { timeM = context.getString(R.string.fuzzy_five);
-        } else                    { timeM = ""; // O'CLOCK
-        }
-
-        // Adjust for next hour
-        if (minutes >= 36) {
-            if (m24HourFormat) {
-                hours = (hours + 1) % 24;
-            } else {
-                hours = (hours + 1) % 12;
-            }
-        }
-
-        switch (hours) {
-            case 0:  timeH = context.getString(R.string.fuzzy_twelve); break;
-            case 1:  timeH = context.getString(R.string.fuzzy_one); break;
-            case 2:  timeH = context.getString(R.string.fuzzy_two); break;
-            case 3:  timeH = context.getString(R.string.fuzzy_three); break;
-            case 4:  timeH = context.getString(R.string.fuzzy_four); break;
-            case 5:  timeH = context.getString(R.string.fuzzy_five); break;
-            case 6:  timeH = context.getString(R.string.fuzzy_six); break;
-            case 7:  timeH = context.getString(R.string.fuzzy_seven); break;
-            case 8:  timeH = context.getString(R.string.fuzzy_eight); break;
-            case 9:  timeH = context.getString(R.string.fuzzy_nine); break;
-            case 10: timeH = context.getString(R.string.fuzzy_ten); break;
-            case 11: timeH = context.getString(R.string.fuzzy_eleven); break;
-            case 12: timeH = context.getString(R.string.fuzzy_twelve); break;
-            case 13: timeH = context.getString(R.string.fuzzy_thirteen); break;
-            case 14: timeH = context.getString(R.string.fuzzy_fourteen); break;
-            case 15: timeH = context.getString(R.string.fuzzy_fifteen); break;
-            case 16: timeH = context.getString(R.string.fuzzy_sixteen); break;
-            case 17: timeH = context.getString(R.string.fuzzy_seventeen); break;
-            case 18: timeH = context.getString(R.string.fuzzy_eighteen); break;
-            case 19: timeH = context.getString(R.string.fuzzy_nineteen); break;
-            case 20: timeH = context.getString(R.string.fuzzy_twenty); break;
-            case 21: timeH = context.getString(R.string.fuzzy_twenty) + context.getString(R.string.fuzzy_one); break;
-            case 22: timeH = context.getString(R.string.fuzzy_twenty) + context.getString(R.string.fuzzy_two); break;
-            case 23: timeH = context.getString(R.string.fuzzy_twenty) + context.getString(R.string.fuzzy_three); break;
-            case 24: timeH = context.getString(R.string.fuzzy_twenty) + context.getString(R.string.fuzzy_four); break;
-            default: timeH = ""; break;
-        }
-
-        // Handle Noon and Midnight
-        if (m24HourFormat) {
-            if (hours == 12) {
-                timeH = context.getString(R.string.fuzzy_noon);
-            } else if (hours == 0) {
-                timeH = context.getString(R.string.fuzzy_midnight);
-            }
-        } else {
-            if (hours == 0) {
-                if (minutes >= 36) {
-                    timeH = (mCalendar.get(Calendar.AM_PM) == 1) ?
-                            context.getString(R.string.fuzzy_midnight) :
-                            context.getString(R.string.fuzzy_noon);
-                } else {
-                    timeH = (mCalendar.get(Calendar.AM_PM) == 0) ?
-                            context.getString(R.string.fuzzy_midnight) :
-                            context.getString(R.string.fuzzy_noon);
-                }
-            }
-        }
-
-        // Final shuffle before writing to display
-        if (minutes >= 56) {
-            separator = (hours > 12) ?
-                    context.getString(R.string.fuzzy_hundred) :
-                    context.getString(R.string.fuzzy_oclock);
-            if (hours == 0 || (m24HourFormat && (hours == 12))) {
-//                separator = (mCalendar.get(Calendar.AM_PM) == 1) ?
-//                        context.getString(R.string.fuzzy_midnight) :
-//                        context.getString(R.string.fuzzy_noon);
-                separator = timeH;
-                timeM = "";
-            } else {
-                timeM = timeH;
-            }
-            timeH = "";
-        } else if (minutes >= 36) {
-            separator = context.getString(R.string.fuzzy_to);
-        } else if (minutes >= 5) {
-            separator = context.getString(R.string.fuzzy_past);
-        } else {
-            separator = (hours > 12) ?
-                    context.getString(R.string.fuzzy_hundred) :
-                    context.getString(R.string.fuzzy_oclock);
-            if (hours == 0 || (m24HourFormat && (hours == 12))) {
-//                separator = (mCalendar.get(Calendar.AM_PM) == 0) ?
-//                        context.getString(R.string.fuzzy_midnight) :
-//                        context.getString(R.string.fuzzy_noon);
-                separator = timeH;
-                timeM = "";
-            } else {
-                timeM = timeH;
-            }
-            timeH = "";
-        }
+        FuzzyLogic.FuzzyTime time = mFuzzyLogic.getFuzzyTime();
+        CharSequence timeM = (time.minute != -1) ? getResources().getString(time.minute) : "";
+        CharSequence timeH = (time.hour != -1) ? getResources().getString(time.hour) : "";
+        CharSequence separator = (time.separator != -1) ? getResources().getString(time.separator) : "";
 
         // Write time to the display
         mTimeDisplayMinutes.setText(timeM);
@@ -307,6 +179,7 @@ public class FuzzyClockView extends LinearLayout {
         mTimeDisplayHours.setText(timeH);
 
         // Update accessibility string.
+        StringBuilder fullTimeStr = new StringBuilder();
         fullTimeStr.append(timeM);
         fullTimeStr.append(separator);
         fullTimeStr.append(timeH);
@@ -314,7 +187,7 @@ public class FuzzyClockView extends LinearLayout {
     }
 
     private void setDateFormat() {
-        m24HourFormat = android.text.format.DateFormat.is24HourFormat(getContext());
+        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
     }
 
     void setLive(boolean live) {

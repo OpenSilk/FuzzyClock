@@ -41,6 +41,10 @@
     <string name="fuzzy_eighteen">EIGHTEEN</string>
     <string name="fuzzy_nineteen">NINETEEN</string>
     <string name="fuzzy_twenty">TWENTY</string>
+    <string name="fuzzy_twenty_one">TWENTYONE</string>
+    <string name="fuzzy_twenty_two">TWENTYTWO</string>
+    <string name="fuzzy_twenty_three">TWENTYTHREE</string>
+    <string name="fuzzy_twenty_four">TWENTYFOUR</string>
 
     <string name="fuzzy_half">HALF</string>
     <string name="fuzzy_hundred">HUNDRED</string>

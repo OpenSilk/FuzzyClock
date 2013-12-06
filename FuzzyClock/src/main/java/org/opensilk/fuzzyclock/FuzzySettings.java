@@ -46,7 +46,16 @@ public class FuzzySettings extends Activity implements View.OnClickListener {
     private Intent mResult = new Intent();
 
     private CharSequence[] mColorEntries;
-    private int[] mColorResources;
+    private static final int[] mColorResources = {
+            android.R.color.holo_blue_light,
+            android.R.color.holo_red_light,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_purple,
+            android.R.color.white,
+    };
+
+    private boolean isWidget = false;
 
     @DebugLog
     @Override
@@ -63,14 +72,17 @@ public class FuzzySettings extends Activity implements View.OnClickListener {
                 getString(R.string.white)
         };
 
-        mColorResources = new int[] {
-            android.R.color.holo_blue_light,
-                    android.R.color.holo_red_light,
-                    android.R.color.holo_green_light,
-                    android.R.color.holo_orange_light,
-                    android.R.color.holo_purple,
-                    android.R.color.white,
-        };
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            if (mAppWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                isWidget = true;
+                mResult = new Intent();
+                mResult.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+                setResult(RESULT_CANCELED, mResult);
+            }
+        }
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -80,23 +92,22 @@ public class FuzzySettings extends Activity implements View.OnClickListener {
 
         mMinutes = findViewById(R.id.timeDisplayMinutes);
         mMinutes.setOnClickListener(this);
+
         mHours = findViewById(R.id.timeDisplayHours);
         mHours.setOnClickListener(this);
+
         mSeparator = findViewById(R.id.timeDisplaySeparator);
         mSeparator.setOnClickListener(this);
 
         mButtonDone = (Button) findViewById(R.id.button_done);
         mButtonDone.setOnClickListener(this);
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
-            mResult = new Intent();
-        }
-        if (mAppWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            mResult.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-            setResult(RESULT_CANCELED, mResult);
+        if (isWidget) {
+            setTitle(R.string.settings_title_widget);
+            mFuzzyClock.setMinuteColor(mPrefs.getInt(FuzzyWidget.PREF_COLOR_MINUTE, android.R.color.white));
+            mFuzzyClock.setHourColor(mPrefs.getInt(FuzzyWidget.PREF_COLOR_HOUR, android.R.color.white));
+            mFuzzyClock.setSeparatorColor(mPrefs.getInt(FuzzyWidget.PREF_COLOR_SEPARATOR, android.R.color.holo_blue_light));
+            mFuzzyClock.updateColors();
         }
 
     }
@@ -105,13 +116,13 @@ public class FuzzySettings extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == mMinutes) {
-            chooseColor("minutes_color_val", 5);
+            chooseColor(isWidget ? FuzzyWidget.PREF_COLOR_MINUTE : FuzzyDreams.PREF_COLOR_MINUTE, 5);
         } else if (v == mHours) {
-            chooseColor("hours_color_val", 5);
+            chooseColor(isWidget ? FuzzyWidget.PREF_COLOR_HOUR : FuzzyDreams.PREF_COLOR_HOUR, 5);
         } else if (v == mSeparator) {
-            chooseColor("separator_color_val", 0);
+            chooseColor(isWidget ? FuzzyWidget.PREF_COLOR_SEPARATOR : FuzzyDreams.PREF_COLOR_SEPARATOR, 0);
         } else if (v == mButtonDone) {
-            if (mAppWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            if (isWidget) {
                 // Force refresh;
                 sendBroadcast(new Intent(ACTION_UPDATE_WIDGET));
                 setResult(RESULT_OK, mResult);
@@ -139,11 +150,26 @@ public class FuzzySettings extends Activity implements View.OnClickListener {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 mPrefs.edit().putInt(pref, mColorResources[which]).commit();
-                                mFuzzyClock.updateColors();
+                                updateClockView(pref, mColorResources[which]);
                                 dialog.dismiss();
                             }
                         })
                 .show();
+    }
+
+    @DebugLog
+    private void updateClockView(String pref, int color) {
+        if (pref.equals(FuzzyDreams.PREF_COLOR_MINUTE) ||
+                pref.equals(FuzzyWidget.PREF_COLOR_MINUTE)) {
+            mFuzzyClock.setMinuteColor(color);
+        } else if (pref.equals(FuzzyDreams.PREF_COLOR_HOUR) ||
+                pref.equals(FuzzyWidget.PREF_COLOR_HOUR)) {
+            mFuzzyClock.setHourColor(color);
+        } else if (pref.equals(FuzzyDreams.PREF_COLOR_SEPARATOR) ||
+                pref.equals(FuzzyWidget.PREF_COLOR_SEPARATOR)) {
+            mFuzzyClock.setSeparatorColor(color);
+        }
+        mFuzzyClock.updateColors();
     }
 
 }

@@ -27,8 +27,12 @@ import hugo.weaving.DebugLog;
 
 public class FuzzyDreams extends DreamService {
 
-    static final String TAG = FuzzyDreams.class.getSimpleName();
-    static final boolean LOGV = true;
+    private static final String TAG = FuzzyDreams.class.getSimpleName();
+    private static final boolean LOGV = true;
+
+    public static final String PREF_COLOR_MINUTE = "color_minute_dream";
+    public static final String PREF_COLOR_HOUR = "color_hour_dream";
+    public static final String PREF_COLOR_SEPARATOR = "color_separator_dream";
 
     private View mContentView, mSaverView, mFuzzyClock;
 

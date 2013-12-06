@@ -39,6 +39,10 @@ public class FuzzyWidget extends AppWidgetProvider {
 
     public static final String ACTION_UPDATE_WIDGET = "org.opensilk.action.UPDATE_FUZZY_WIDGET";
 
+    public static final String PREF_COLOR_MINUTE = "color_minute_widget";
+    public static final String PREF_COLOR_HOUR = "color_hour_widget";
+    public static final String PREF_COLOR_SEPARATOR = "color_separator_widget";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (LOGV) Log.v(TAG, "onReceive");
@@ -118,11 +122,11 @@ public class FuzzyWidget extends AppWidgetProvider {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         views.setTextColor(R.id.timeDisplayMinutes,
-                context.getResources().getColor(prefs.getInt("minutes_color_val", android.R.color.white)));
+                context.getResources().getColor(prefs.getInt(PREF_COLOR_MINUTE, android.R.color.white)));
         views.setTextColor(R.id.timeDisplayHours,
-                context.getResources().getColor(prefs.getInt("hours_color_val", android.R.color.white)));
+                context.getResources().getColor(prefs.getInt(PREF_COLOR_HOUR, android.R.color.white)));
         views.setTextColor(R.id.timeDisplaySeparator,
-                context.getResources().getColor(prefs.getInt("separator_color_val", android.R.color.holo_blue_light)));
+                context.getResources().getColor(prefs.getInt(PREF_COLOR_SEPARATOR, android.R.color.holo_blue_light)));
 
         AppWidgetManager appManager = AppWidgetManager.getInstance(context);
 

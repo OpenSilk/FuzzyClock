@@ -66,6 +66,7 @@
     <string name="ok">Ok</string>
 
     <!-- Settings Resources -->
-    <string name="settings_title">Fuzzy settings</string>
+    <string name="settings_title">Fuzzy dream settings</string>
+    <string name="settings_title_widget">Fuzzy widget settings</string>
     <string name="settings_help">Click on a word to change its color</string>
 </resources>

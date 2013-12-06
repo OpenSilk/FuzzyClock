@@ -48,7 +48,10 @@ public class FuzzyClockView extends LinearLayout {
     private boolean mAttached;
     //private final Typeface mRoboto;
     private String mTimeZoneId;
-    private SharedPreferences mPrefs;
+
+    private int mMinuteColorRes = android.R.color.white;
+    private int mHourColorRes = android.R.color.white;
+    private int mSeparatorColorRes = android.R.color.holo_blue_light;
 
 
     /* called by system on minute ticks */
@@ -86,8 +89,11 @@ public class FuzzyClockView extends LinearLayout {
 
     public FuzzyClockView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         //mRoboto = Typeface.createFromAsset(context.getAssets(),"fonts/Roboto-Regular.ttf");
+        mMinuteColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_MINUTE, mMinuteColorRes);
+        mHourColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_HOUR, mHourColorRes);
+        mSeparatorColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_SEPARATOR, mSeparatorColorRes);
     }
 
     @DebugLog
@@ -195,9 +201,9 @@ public class FuzzyClockView extends LinearLayout {
 
     @DebugLog
     public void updateColors() {
-        mTimeDisplayMinutes.setTextColor(getResources().getColor(mPrefs.getInt("minutes_color_val", android.R.color.white)));
-        mTimeDisplayHours.setTextColor(getResources().getColor(mPrefs.getInt("hours_color_val", android.R.color.white)));
-        mTimeDisplaySeparator.setTextColor(getResources().getColor(mPrefs.getInt("separator_color_val", android.R.color.holo_blue_light)));
+        mTimeDisplayMinutes.setTextColor(getResources().getColor(mMinuteColorRes));
+        mTimeDisplayHours.setTextColor(getResources().getColor(mHourColorRes));
+        mTimeDisplaySeparator.setTextColor(getResources().getColor(mSeparatorColorRes));
     }
 
     private void setDateFormat() {
@@ -212,4 +218,17 @@ public class FuzzyClockView extends LinearLayout {
         mTimeZoneId = id;
         updateTime();
     }
+
+    public void setMinuteColor(int res) {
+        mMinuteColorRes = res;
+    }
+
+    public void setHourColor(int res) {
+        mHourColorRes = res;
+    }
+
+    public void setSeparatorColor(int res) {
+        mSeparatorColorRes = res;
+    }
+
 }

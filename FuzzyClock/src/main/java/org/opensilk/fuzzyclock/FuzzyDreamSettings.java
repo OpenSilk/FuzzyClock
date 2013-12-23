@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+/*
  *  Copyright (C) 2013 OpenSilk Productions LLC
  *
  *  This file is part of Fuzzy Clock
@@ -15,10 +14,18 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
--->
-<resources>
-    <dimen name="time_margin_top">48dip</dimen>
-    <dimen name="digital_margin_bottom">36dip</dimen>
-    <dimen name="screensaver_margin">20dip</dimen>
-    <dimen name="fuzzy_font_size">48sp</dimen>
-</resources>
+ */
+package org.opensilk.fuzzyclock;
+
+import hugo.weaving.DebugLog;
+
+public class FuzzyDreamSettings extends FuzzySettings {
+
+    @DebugLog
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mFuzzyPrefs = new FuzzyPrefs(this);
+    }
+
+}

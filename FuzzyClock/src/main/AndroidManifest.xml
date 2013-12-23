@@ -23,15 +23,15 @@
 
     <uses-sdk
         android:minSdkVersion="17"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="19" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
 
-        <activity android:name="org.opensilk.fuzzyclock.FuzzySettings"
+        <activity android:name="org.opensilk.fuzzyclock.FuzzyDreamSettings"
             android:label="@string/settings_title"
             android:theme="@android:style/Theme.Holo"
             android:taskAffinity=""
@@ -39,6 +39,16 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
+            android:label="@string/settings_title_widget"
+            android:theme="@android:style/Theme.Holo"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:exported="true">
+            <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
@@ -46,16 +56,15 @@
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-                <action android:name="android.intent.action.DATE_CHANGED" />
-                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
                 <action android:name="android.intent.action.SCREEN_ON" />
-                <action android:name="android.intent.action.TIME_SET" />
-                <action android:name="android.intent.action.LOCALE_CHANGED" />
-                <action android:name="org.opensilk.action.UPDATE_FUZZY_WIDGET"/>
+                <action android:name="org.opensilk.action.UPDATE_FUZZY_WIDGET_TIME"/>
+                <action android:name="org.opensilk.action.UPDATE_FUZZY_WIDGET_SETTINGS"/>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/fuzzy_widget"/>
         </receiver>
+
+        <service android:name="org.opensilk.fuzzyclock.FuzzyWidgetService"/>
 
         <service
             android:name="org.opensilk.fuzzyclock.FuzzyDreams"

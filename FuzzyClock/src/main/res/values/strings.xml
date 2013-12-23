@@ -63,10 +63,14 @@
     <string name="holo_purple">Holo purple</string>
     <string name="white">White</string>
 
-    <string name="ok">Ok</string>
+    <string name="reset">Reset</string>
 
     <!-- Settings Resources -->
     <string name="settings_title">Fuzzy dream settings</string>
     <string name="settings_title_widget">Fuzzy widget settings</string>
-    <string name="settings_help">Click on a word to change its color</string>
+
+    <string name="picker_adjust_size">Adjust size</string>
+
+    <string name="settings_help">Tips:\n1) Click on the words to change colors.\n2) Scroll the wheel to change size.\n3) Rotate to change landscape size.</string>
+
 </resources>

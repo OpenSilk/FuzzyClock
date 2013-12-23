@@ -26,7 +26,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
 public class ScreenSaverAnimation implements Runnable {
-    static final long MOVE_DELAY = 60000; // DeskClock.SCREEN_SAVER_MOVE_DELAY;
+    static final long MOVE_DELAY = 30000; // DeskClock.SCREEN_SAVER_MOVE_DELAY;
     static final long SLIDE_TIME = 10000;
     static final long FADE_TIME = 3000;
 
@@ -64,13 +64,14 @@ public class ScreenSaverAnimation implements Runnable {
 
         final float xrange = mContentView.getWidth() - mSaverView.getWidth();
         final float yrange = mContentView.getHeight() - mSaverView.getHeight();
-        Log.v("ScreenSaverAnimation", "xrange: " + xrange + " yrange: " + yrange);
+        Log.v("FuzzySaverAnimation", "xrange: " + xrange + " yrange: " + yrange);
 
         if (xrange == 0 && yrange == 0) {
             delay = 500; // back in a split second
         } else {
             final int nextx = (int) (Math.random() * xrange);
             final int nexty = (int) (Math.random() * yrange);
+            Log.v("FuzzySaverAnimation", "x: " + nextx + " y: " + nexty);
 
             if (mSaverView.getAlpha() == 0f) {
                 // jump right there

@@ -21,14 +21,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.ContentObserver;
-//import android.graphics.Typeface;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -36,6 +32,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import hugo.weaving.DebugLog;
+
+import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class FuzzyClockView extends LinearLayout {
 
@@ -46,13 +44,14 @@ public class FuzzyClockView extends LinearLayout {
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;
     private boolean mAttached;
-    //private final Typeface mRoboto;
     private String mTimeZoneId;
 
     private int mMinuteColorRes = android.R.color.white;
     private int mHourColorRes = android.R.color.white;
     private int mSeparatorColorRes = android.R.color.holo_blue_light;
+    private float mFontSize;
 
+    private TimeChangedListener mCallback;
 
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
@@ -83,17 +82,16 @@ public class FuzzyClockView extends LinearLayout {
         }
     }
 
+    public interface TimeChangedListener {
+        public void onTimeChanged();
+    }
+
     public FuzzyClockView(Context context) {
         this(context, null);
     }
 
     public FuzzyClockView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        //mRoboto = Typeface.createFromAsset(context.getAssets(),"fonts/Roboto-Regular.ttf");
-        mMinuteColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_MINUTE, mMinuteColorRes);
-        mHourColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_HOUR, mHourColorRes);
-        mSeparatorColorRes = prefs.getInt(FuzzyDreams.PREF_COLOR_SEPARATOR, mSeparatorColorRes);
     }
 
     @DebugLog
@@ -101,13 +99,9 @@ public class FuzzyClockView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTimeDisplayHours = (TextView)findViewById(R.id.timeDisplayHours);
-        //mTimeDisplayHours.setTypeface(mRoboto);
         mTimeDisplayMinutes = (TextView)findViewById(R.id.timeDisplayMinutes);
-        //mTimeDisplayMinutes.setTypeface(mRoboto);
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
-        //mTimeDisplaySeparator.setTypeface(mRoboto);
         mFuzzyLogic.setCalendar(Calendar.getInstance());
-        updateColors();
         setDateFormat();
     }
 
@@ -132,7 +126,6 @@ public class FuzzyClockView extends LinearLayout {
         mFormatChangeObserver = new FormatChangeObserver();
         getContext().getContentResolver().registerContentObserver(
                 Settings.System.CONTENT_URI, true, mFormatChangeObserver);
-
         updateTime();
     }
 
@@ -151,12 +144,13 @@ public class FuzzyClockView extends LinearLayout {
                 mFormatChangeObserver);
     }
 
-
-    void updateTime(Calendar c) {
+    @DebugLog
+    public void updateTime(Calendar c) {
         mFuzzyLogic.setCalendar(c);
         updateTime();
     }
 
+    @DebugLog
     public void updateTime(int hour, int minute) {
         // set the alarm text
         final Calendar c = Calendar.getInstance();
@@ -188,8 +182,8 @@ public class FuzzyClockView extends LinearLayout {
 
         // Write time to the display
         mTimeDisplayMinutes.setText(timeM);
-        mTimeDisplaySeparator.setText(separator);
         mTimeDisplayHours.setText(timeH);
+        mTimeDisplaySeparator.setText(separator);
 
         // Update accessibility string.
         StringBuilder fullTimeStr = new StringBuilder();
@@ -197,6 +191,10 @@ public class FuzzyClockView extends LinearLayout {
         fullTimeStr.append(separator);
         fullTimeStr.append(timeH);
         setContentDescription(fullTimeStr);
+
+        if (mCallback != null) {
+            mCallback.onTimeChanged();
+        }
     }
 
     @DebugLog
@@ -206,8 +204,37 @@ public class FuzzyClockView extends LinearLayout {
         mTimeDisplaySeparator.setTextColor(getResources().getColor(mSeparatorColorRes));
     }
 
+    @DebugLog
+    public void setMinuteColor(int res) {
+        mMinuteColorRes = res;
+    }
+
+    @DebugLog
+    public void setHourColor(int res) {
+        mHourColorRes = res;
+    }
+
+    @DebugLog
+    public void setSeparatorColor(int res) {
+        mSeparatorColorRes = res;
+    }
+
+    @DebugLog
+    private void updateSize() {
+        mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, mFontSize);
+        mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, mFontSize);
+        mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, mFontSize);
+    }
+
+    @DebugLog
+    public void setFontSize(float size) {
+        mFontSize = size;
+        updateSize();
+    }
+
     private void setDateFormat() {
-        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
+        mFuzzyLogic.setDateFormat(false); //TODO fix support for 24hour
+        //mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
     }
 
     public void setLive(boolean live) {
@@ -219,16 +246,8 @@ public class FuzzyClockView extends LinearLayout {
         updateTime();
     }
 
-    public void setMinuteColor(int res) {
-        mMinuteColorRes = res;
-    }
-
-    public void setHourColor(int res) {
-        mHourColorRes = res;
-    }
-
-    public void setSeparatorColor(int res) {
-        mSeparatorColorRes = res;
+    public void registerCallback(TimeChangedListener l) {
+        mCallback = l;
     }
 
 }

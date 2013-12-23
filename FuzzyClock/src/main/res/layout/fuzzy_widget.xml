@@ -24,6 +24,7 @@
 
 
     <LinearLayout
+        android:id="@+id/time"
         android:orientation="horizontal"
         android:layout_gravity="center"
         android:layout_height="wrap_content"
@@ -35,24 +36,21 @@
             android:layout_height="wrap_content"
             android:ellipsize="none"
             android:singleLine="true"
-            style="@style/fuzzy_regular"
-            android:textColor="@color/clock_white" />
+            style="@style/fuzzy_regular"/>
         <TextView
             android:id="@+id/timeDisplaySeparator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:ellipsize="none"
-            style="@style/fuzzy_regular"
-            android:textColor="@android:color/holo_blue_light" />
+            style="@style/fuzzy_regular"/>
         <TextView
             android:id="@+id/timeDisplayHours"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:ellipsize="none"
-            style="@style/fuzzy_regular"
-            android:textColor="@color/clock_white" />
+            style="@style/fuzzy_regular"/>
 
     </LinearLayout>
 

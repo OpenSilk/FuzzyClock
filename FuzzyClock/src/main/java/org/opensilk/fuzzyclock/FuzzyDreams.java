@@ -30,11 +30,8 @@ public class FuzzyDreams extends DreamService {
     private static final String TAG = FuzzyDreams.class.getSimpleName();
     private static final boolean LOGV = true;
 
-    public static final String PREF_COLOR_MINUTE = "color_minute_dream";
-    public static final String PREF_COLOR_HOUR = "color_hour_dream";
-    public static final String PREF_COLOR_SEPARATOR = "color_separator_dream";
-
-    private View mContentView, mSaverView, mFuzzyClock;
+    private View mContentView, mSaverView;
+    private FuzzyClockView mFuzzyClock;
 
     private final Handler mHandler = new Handler();
 
@@ -64,14 +61,11 @@ public class FuzzyDreams extends DreamService {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-
         // We want the screen saver to exit upon user interaction.
         setInteractive(false);
-
         setFullscreen(true);
-
         setLayout();
-
+        mHandler.removeCallbacks(mMoveSaverRunnable);
         mHandler.post(mMoveSaverRunnable);
     }
 
@@ -79,18 +73,36 @@ public class FuzzyDreams extends DreamService {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
         mHandler.removeCallbacks(mMoveSaverRunnable);
     }
 
     private void setLayout() {
         setContentView(R.layout.fuzzy_dreams);
-        mFuzzyClock = findViewById(R.id.fuzzy_clock);
-        mSaverView = findViewById(R.id.main_clock);
         setScreenBright(false);
-        mContentView = (View) mSaverView.getParent();
-        mSaverView.setAlpha(0);
 
+        FuzzyPrefs prefs = new FuzzyPrefs(this);
+
+        mFuzzyClock = (FuzzyClockView) findViewById(R.id.time);
+        mFuzzyClock.registerCallback(mListener);
+        mFuzzyClock.setMinuteColor(prefs.color.minute);
+        mFuzzyClock.setHourColor(prefs.color.hour);
+        mFuzzyClock.setSeparatorColor(prefs.color.separator);
+        mFuzzyClock.updateColors();
+        mFuzzyClock.setFontSize(prefs.size);
+
+        mSaverView = findViewById(R.id.main_clock);
+        mSaverView.setAlpha(0);
+        mContentView = (View) mSaverView.getParent();
         mMoveSaverRunnable.registerViews(mContentView, mSaverView);
     }
+
+    FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
+        @DebugLog
+        @Override
+        public void onTimeChanged() {
+            // When text has changed we need to recalculate so we don't run off the screen
+            mHandler.removeCallbacks(mMoveSaverRunnable);
+            mHandler.post(mMoveSaverRunnable);
+        }
+    };
 }

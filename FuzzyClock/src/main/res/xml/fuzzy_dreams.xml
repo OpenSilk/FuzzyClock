@@ -17,4 +17,4 @@
 *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <dream xmlns:android="http://schemas.android.com/apk/res/android"
-    android:settingsActivity="org.opensilk.fuzzyclock/org.opensilk.fuzzyclock.FuzzySettings"/>
+    android:settingsActivity="org.opensilk.fuzzyclock/org.opensilk.fuzzyclock.FuzzyDreamSettings"/>

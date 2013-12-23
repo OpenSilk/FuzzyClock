@@ -21,14 +21,10 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 import hugo.weaving.DebugLog;
 
@@ -37,23 +33,18 @@ public class FuzzyWidget extends AppWidgetProvider {
     private static final String TAG = FuzzyWidget.class.getSimpleName();
     private static final boolean LOGV = true;
 
-    public static final String ACTION_UPDATE_WIDGET = "org.opensilk.action.UPDATE_FUZZY_WIDGET";
-
-    public static final String PREF_COLOR_MINUTE = "color_minute_widget";
-    public static final String PREF_COLOR_HOUR = "color_hour_widget";
-    public static final String PREF_COLOR_SEPARATOR = "color_separator_widget";
+    public static final String ACTION_UPDATE_WIDGET_TIME = "org.opensilk.action.UPDATE_FUZZY_WIDGET_TIME";
+    public static final String ACTION_UPDATE_WIDGET_SETTINGS = "org.opensilk.action.UPDATE_FUZZY_WIDGET_SETTINGS";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (LOGV) Log.v(TAG, "onReceive");
         String action = intent.getAction();
-        if (Intent.ACTION_DATE_CHANGED.equals(action) ||
-                Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
-                Intent.ACTION_SCREEN_ON.equals(action) ||
-                Intent.ACTION_TIME_CHANGED.equals(action) ||
-                Intent.ACTION_LOCALE_CHANGED.equals(action) ||
-                ACTION_UPDATE_WIDGET.equals(action)) {
-            updateTime(context);
+        if (LOGV) Log.v(TAG, "onReceive: " + action);
+        if (Intent.ACTION_SCREEN_ON.equals(action) ||
+                ACTION_UPDATE_WIDGET_TIME.equals(action)) {
+            pokeService(context, ACTION_UPDATE_WIDGET_TIME);
+        } else if (ACTION_UPDATE_WIDGET_SETTINGS.equals(action)) {
+            pokeService(context, ACTION_UPDATE_WIDGET_SETTINGS);
         } else {
             super.onReceive(context, intent);
         }
@@ -62,18 +53,19 @@ public class FuzzyWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         if (LOGV) Log.v(TAG, "onUpdate");
-        updateTime(context);
+        pokeService(context, ACTION_UPDATE_WIDGET_SETTINGS);
     }
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         if (LOGV) Log.v(TAG, "onDeleted");
-        updateTime(context);
+        pokeService(context, ACTION_UPDATE_WIDGET_SETTINGS);
     }
 
     @Override
     public void onDisabled(Context context) {
         if (LOGV) Log.v(TAG, "onDisabled");
+        context.stopService(new Intent(context, FuzzyWidgetService.class));
         cancelNextAlarm(context);
     }
 
@@ -83,7 +75,7 @@ public class FuzzyWidget extends AppWidgetProvider {
         fuzzyLogic.updateTime();
         fuzzyLogic.updateTime(); // Double call to force prev==cur
         long nextMilli = fuzzyLogic.getNextIntervalMilli();
-        Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET);
+        Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET_TIME);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
@@ -96,48 +88,15 @@ public class FuzzyWidget extends AppWidgetProvider {
     }
 
     void cancelNextAlarm(Context context) {
-        Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET);
+        Intent nextUpdate = new Intent(ACTION_UPDATE_WIDGET_TIME);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
     }
 
     @DebugLog
-    private void updateTime(Context context) {
-        FuzzyLogic fuzzyLogic = new FuzzyLogic();
-        fuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(context));
-        fuzzyLogic.updateTime();
-        FuzzyLogic.FuzzyTime time = fuzzyLogic.getFuzzyTime();
-        CharSequence timeM = (time.minute != -1) ? context.getString(time.minute) : "";
-        CharSequence timeH = (time.hour != -1) ? context.getString(time.hour) : "";
-        CharSequence separator = (time.separator != -1) ? context.getString(time.separator) : "";
-
-        // Write time to the display
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.fuzzy_widget);
-
-        views.setTextViewText(R.id.timeDisplayMinutes, timeM);
-        views.setTextViewText(R.id.timeDisplayHours, timeH);
-        views.setTextViewText(R.id.timeDisplaySeparator, separator);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        views.setTextColor(R.id.timeDisplayMinutes,
-                context.getResources().getColor(prefs.getInt(PREF_COLOR_MINUTE, android.R.color.white)));
-        views.setTextColor(R.id.timeDisplayHours,
-                context.getResources().getColor(prefs.getInt(PREF_COLOR_HOUR, android.R.color.white)));
-        views.setTextColor(R.id.timeDisplaySeparator,
-                context.getResources().getColor(prefs.getInt(PREF_COLOR_SEPARATOR, android.R.color.holo_blue_light)));
-
-        AppWidgetManager appManager = AppWidgetManager.getInstance(context);
-
-        int[] widgetIds = appManager.getAppWidgetIds(new ComponentName(context, FuzzyWidget.class));
-        if (widgetIds != null && widgetIds.length > 0) {
-            if (LOGV) { for (int id: widgetIds) { Log.v(TAG, "Updating widget id=" + id); } }
-            appManager.updateAppWidget(widgetIds, views);
-            setNextAlarm(context);
-        } else {
-            Log.i(TAG, "No widgets left to update...");
-            cancelNextAlarm(context);
-        }
+    private void pokeService(Context context, String action) {
+        context.startService(new Intent(action, null, context, FuzzyWidgetService.class));
+        setNextAlarm(context);
     }
 }

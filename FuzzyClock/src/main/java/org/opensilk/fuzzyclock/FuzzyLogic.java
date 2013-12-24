@@ -22,8 +22,8 @@ import java.util.Calendar;
 public class FuzzyLogic {
 
     private Calendar mCalendar;
-    private int minutes, hours;
-    private int previousMinutes, previousHours;
+    private int mMinutes, mHours;
+    private int mPrevMinutes, mPrevHours;
     private boolean m24HourFormat = false;
 
     public FuzzyLogic() {
@@ -47,15 +47,15 @@ public class FuzzyLogic {
     }
 
     public void updateTime() {
-        previousMinutes = minutes;
-        minutes = mCalendar.get(Calendar.MINUTE);
-        previousHours = hours;
-        hours = mCalendar.get(getDateFormat() ? Calendar.HOUR_OF_DAY : Calendar.HOUR);
+        mPrevMinutes = mMinutes;
+        mMinutes = mCalendar.get(Calendar.MINUTE);
+        mPrevHours = mHours;
+        mHours = mCalendar.get(Calendar.HOUR_OF_DAY);
     }
 
     public boolean hasChanged() {
-        return getMinutesState(previousMinutes) != getMinutesState(minutes)
-                || previousHours != hours;
+        return getMinutesState(mPrevMinutes) != getMinutesState(mMinutes)
+                || mPrevHours != mHours;
     }
 
     private int getMinutesState(int minutes) {
@@ -77,6 +77,8 @@ public class FuzzyLogic {
 
     public long getNextIntervalMilli() {
         long nextMilli = 0;
+        int minutes = mMinutes;
+        int hours = mHours;
         if        (minutes >= 56) { hours += 1; minutes = 5;
         } else if (minutes >= 51) { minutes = 56;
         } else if (minutes >= 46) { minutes = 51;
@@ -89,13 +91,20 @@ public class FuzzyLogic {
         } else if (minutes >= 5)  { minutes = 10;
         } else                    { minutes = 5;
         }
-        nextMilli += (hours - previousHours) * 60 * 60 * 1000;
-        nextMilli += (minutes - previousMinutes) * 60 * 1000;
+        nextMilli += (hours - mHours) * 3600000;
+        nextMilli += (minutes - mMinutes) * 60000;
+        nextMilli -= mCalendar.get(Calendar.SECOND) * 1000;
         return nextMilli;
     }
 
     public FuzzyTime getFuzzyTime() {
         int timeM, timeH, separator;
+        int minutes = mMinutes;
+        int hours = mHours;
+
+        if (!m24HourFormat) {
+            hours %= 12;
+        }
 
         if        (minutes >= 56) { timeM = -1; // O'CLOCK
         } else if (minutes >= 51) { timeM = R.string.fuzzy_five;
@@ -196,8 +205,8 @@ public class FuzzyLogic {
 
     public static class FuzzyTime {
         public int minute, hour, separator;
-        public FuzzyTime(int min, int hour, int sep) {
-            this.minute = min;
+        public FuzzyTime(int minute, int hour, int sep) {
+            this.minute = minute;
             this.hour = hour;
             this.separator = sep;
         }

@@ -58,16 +58,23 @@ public class FuzzyClockView extends LinearLayout {
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mLive && intent.getAction().equals(
-                    Intent.ACTION_TIMEZONE_CHANGED)) {
+            if (mLive && intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
                 mFuzzyLogic.setCalendar(Calendar.getInstance());
             }
-            // Post a runnable to avoid blocking the broadcast.
-            mHandler.post(new Runnable() {
-                public void run() {
-                    updateTime();
-                }
-            });
+            if (mLive && intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (updateLogic()) updateTime();
+                    }
+                });
+            } else {
+                mHandler.post(new Runnable() {
+                    public void run() {
+                        updateTime();
+                    }
+                });
+            }
         }
     };
 
@@ -142,6 +149,18 @@ public class FuzzyClockView extends LinearLayout {
     }
 
     @DebugLog
+    private boolean updateLogic() {
+        if (mLive) {
+            mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
+        }
+        if (mTimeZoneId != null) {
+            mFuzzyLogic.getCalendar().setTimeZone(TimeZone.getTimeZone(mTimeZoneId));
+        }
+        mFuzzyLogic.updateTime();
+        return mFuzzyLogic.hasChanged();
+    }
+
+    @DebugLog
     public void updateTime(Calendar c) {
         mFuzzyLogic.setCalendar(c);
         updateTime();
@@ -159,18 +178,7 @@ public class FuzzyClockView extends LinearLayout {
 
     @DebugLog
     private void updateTime() {
-        if (mLive) {
-            mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
-        }
-        if (mTimeZoneId != null) {
-            mFuzzyLogic.getCalendar().setTimeZone(TimeZone.getTimeZone(mTimeZoneId));
-        }
-
-        mFuzzyLogic.updateTime();
-
-        if (!mFuzzyLogic.hasChanged()) {
-            return;
-        }
+        updateLogic();
 
         FuzzyLogic.FuzzyTime time = mFuzzyLogic.getFuzzyTime();
         CharSequence timeM = (time.minute != -1) ? getResources().getString(time.minute) : "";

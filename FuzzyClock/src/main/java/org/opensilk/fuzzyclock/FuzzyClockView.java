@@ -94,7 +94,6 @@ public class FuzzyClockView extends LinearLayout {
         super(context, attrs);
     }
 
-    @DebugLog
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -105,7 +104,6 @@ public class FuzzyClockView extends LinearLayout {
         setDateFormat();
     }
 
-    @DebugLog
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -129,7 +127,6 @@ public class FuzzyClockView extends LinearLayout {
         updateTime();
     }
 
-    @DebugLog
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -197,38 +194,41 @@ public class FuzzyClockView extends LinearLayout {
         }
     }
 
-    @DebugLog
     public void updateColors() {
         mTimeDisplayMinutes.setTextColor(getResources().getColor(mMinuteColorRes));
         mTimeDisplayHours.setTextColor(getResources().getColor(mHourColorRes));
         mTimeDisplaySeparator.setTextColor(getResources().getColor(mSeparatorColorRes));
     }
 
-    @DebugLog
     public void setMinuteColor(int res) {
         mMinuteColorRes = res;
     }
 
-    @DebugLog
     public void setHourColor(int res) {
         mHourColorRes = res;
     }
 
-    @DebugLog
     public void setSeparatorColor(int res) {
         mSeparatorColorRes = res;
     }
 
-    @DebugLog
     private void updateSize() {
         mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, mFontSize);
     }
 
-    @DebugLog
     public void setFontSize(float size) {
         mFontSize = size;
+        updateSize();
+    }
+
+    public void loadPreferences(FuzzyPrefs prefs) {
+        mMinuteColorRes = prefs.color.minute;
+        mHourColorRes = prefs.color.hour;
+        mSeparatorColorRes = prefs.color.separator;
+        mFontSize = prefs.size;
+        updateColors();
         updateSize();
     }
 

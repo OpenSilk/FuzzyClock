@@ -80,15 +80,9 @@ public class FuzzyDreams extends DreamService {
         setContentView(R.layout.fuzzy_dreams);
         setScreenBright(false);
 
-        FuzzyPrefs prefs = new FuzzyPrefs(this);
-
         mFuzzyClock = (FuzzyClockView) findViewById(R.id.time);
         mFuzzyClock.registerCallback(mListener);
-        mFuzzyClock.setMinuteColor(prefs.color.minute);
-        mFuzzyClock.setHourColor(prefs.color.hour);
-        mFuzzyClock.setSeparatorColor(prefs.color.separator);
-        mFuzzyClock.updateColors();
-        mFuzzyClock.setFontSize(prefs.size);
+        mFuzzyClock.loadPreferences(new FuzzyPrefs(this));
 
         mSaverView = findViewById(R.id.main_clock);
         mSaverView.setAlpha(0);
@@ -96,7 +90,7 @@ public class FuzzyDreams extends DreamService {
         mMoveSaverRunnable.registerViews(mContentView, mSaverView);
     }
 
-    FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
+    final FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
         @DebugLog
         @Override
         public void onTimeChanged() {

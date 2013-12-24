@@ -126,11 +126,7 @@ abstract class FuzzySettings extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
-        mFuzzyClock.setMinuteColor(mFuzzyPrefs.color.minute);
-        mFuzzyClock.setHourColor(mFuzzyPrefs.color.hour);
-        mFuzzyClock.setSeparatorColor(mFuzzyPrefs.color.separator);
-        mFuzzyClock.updateColors();
-        mFuzzyClock.setFontSize(mFuzzyPrefs.size);
+        mFuzzyClock.loadPreferences(mFuzzyPrefs);
         mPicker.setValue((int) mFuzzyPrefs.size);
     }
 

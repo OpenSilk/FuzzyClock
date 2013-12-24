@@ -25,7 +25,6 @@ import hugo.weaving.DebugLog;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID;
-import static org.opensilk.fuzzyclock.FuzzyWidget.ACTION_UPDATE_WIDGET_SETTINGS;
 
 public class FuzzyWidgetSettings extends FuzzySettings {
 
@@ -56,7 +55,7 @@ public class FuzzyWidgetSettings extends FuzzySettings {
     public void onClick(View v) {
         if (v == mButtonDone) {
             // Force refresh;
-            sendBroadcast(new Intent(ACTION_UPDATE_WIDGET_SETTINGS));
+            startService(new Intent(this, FuzzyWidgetService.class));
             setResult(RESULT_OK, mResult);
             finish();
         } else {

@@ -17,6 +17,8 @@
  */
 package org.opensilk.fuzzyclock;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
@@ -24,12 +26,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -41,8 +42,6 @@ import java.util.TimeZone;
 import hugo.weaving.DebugLog;
 
 import static android.util.TypedValue.COMPLEX_UNIT_SP;
-import static org.opensilk.fuzzyclock.FuzzyWidget.ACTION_UPDATE_WIDGET_SETTINGS;
-import static org.opensilk.fuzzyclock.FuzzyWidget.ACTION_UPDATE_WIDGET_TIME;
 
 public class FuzzyWidgetService extends Service {
 
@@ -54,11 +53,10 @@ public class FuzzyWidgetService extends Service {
     private FormatChangeObserver mFormatChangeObserver;
 
     private AppWidgetManager mWidgetManager;
-
     private String mTimeZoneId;
-    private SharedPreferences mPrefs;
+    private boolean mCanDie;
 
-    private HashMap<Integer, FuzzyPrefs> mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
+    private final HashMap<Integer, FuzzyPrefs> mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
 
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
@@ -76,14 +74,6 @@ public class FuzzyWidgetService extends Service {
     private final Runnable mUpdateTimeRunnable = new Runnable() {
         @Override
         public void run() {
-            updateTime();
-        }
-    };
-
-    private final Runnable mUpdateSettingsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateSettings();
             updateTime();
         }
     };
@@ -120,25 +110,15 @@ public class FuzzyWidgetService extends Service {
         setDateFormat();
 
         mWidgetManager = AppWidgetManager.getInstance(mContext);
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        updateSettings();
     }
 
     @DebugLog
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null) {
-            if (LOGV) Log.v(TAG, "Received " + intent.getAction());
-            if (ACTION_UPDATE_WIDGET_TIME.equals(intent.getAction())) {
-                mHandler.removeCallbacks(mUpdateTimeRunnable);
-                mHandler.post(mUpdateTimeRunnable);
-            } else if (ACTION_UPDATE_WIDGET_SETTINGS.equals(intent.getAction())) {
-                mHandler.removeCallbacks(mUpdateSettingsRunnable);
-                mHandler.removeCallbacks(mUpdateTimeRunnable);
-                mHandler.post(mUpdateSettingsRunnable);
-            }
-        }
-        return START_REDELIVER_INTENT;
+        cancelScheduledRestart();
+        updateSettings();
+        updateTime();
+        return START_STICKY;
     }
 
     @Override
@@ -151,6 +131,12 @@ public class FuzzyWidgetService extends Service {
     public void onDestroy() {
         mContext.unregisterReceiver(mIntentReceiver);
         mContext.getContentResolver().unregisterContentObserver(mFormatChangeObserver);
+        mHandler.removeCallbacks(mUpdateTimeRunnable);
+        if (!mCanDie) {
+            // Oh fuck the system is killing us...
+            // Schedule a restart on next time tick in case we're not restarted in time.
+            scheduleRestart();
+        }
         super.onDestroy();
     }
 
@@ -204,8 +190,13 @@ public class FuzzyWidgetService extends Service {
                 views.setContentDescription(R.id.time, fullTimeStr);
                 mWidgetManager.updateAppWidget(id, views);
             }
+            Log.i(TAG, "Scheduling next clock update for "
+                    + (mFuzzyLogic.getNextIntervalMilli()/1000) + "s from now");
+            mHandler.removeCallbacks(mUpdateTimeRunnable);
+            mHandler.postDelayed(mUpdateTimeRunnable, mFuzzyLogic.getNextIntervalMilli());
         } else {
             Log.i(TAG, "No widgets left to update...");
+            mCanDie = true;
             stopSelf();
         }
     }
@@ -229,5 +220,28 @@ public class FuzzyWidgetService extends Service {
     public void setTimeZone(String id) {
         mTimeZoneId = id;
         updateTime();
+    }
+
+    private void scheduleRestart() {
+        FuzzyLogic fuzzyLogic = new FuzzyLogic();
+        fuzzyLogic.updateTime();
+        long nextMilli = fuzzyLogic.getNextIntervalMilli();
+        Intent nextUpdate = new Intent(mContext, FuzzyWidgetService.class);
+        PendingIntent pi = PendingIntent.getService(mContext, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        am.cancel(pi);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            am.setExact(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+        } else {
+            am.set(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+        }
+        Log.i(TAG, "Scheduled service restart for " + (nextMilli/1000) + "s from now");
+    }
+
+    private void cancelScheduledRestart() {
+        Intent nextUpdate = new Intent(mContext, FuzzyWidgetService.class);
+        PendingIntent pi = PendingIntent.getService(mContext, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        am.cancel(pi);
     }
 }

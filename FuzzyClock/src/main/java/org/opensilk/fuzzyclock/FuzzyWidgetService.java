@@ -49,25 +49,27 @@ public class FuzzyWidgetService extends Service {
     private static final boolean LOGV = true;
 
     private Context mContext;
-    private FuzzyLogic mFuzzyLogic = new FuzzyLogic();
     private FormatChangeObserver mFormatChangeObserver;
 
     private AppWidgetManager mWidgetManager;
     private String mTimeZoneId;
     private boolean mCanDie;
 
+    private final FuzzyLogic mFuzzyLogic = new FuzzyLogic();
     private final HashMap<Integer, FuzzyPrefs> mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
-
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
+        @DebugLog
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
                 mFuzzyLogic.setCalendar(Calendar.getInstance());
             }
             mHandler.removeCallbacks(mUpdateTimeRunnable);
-            mHandler.post(mUpdateTimeRunnable);
+            if (!Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                mHandler.post(mUpdateTimeRunnable);
+            }
         }
     };
 
@@ -101,6 +103,8 @@ public class FuzzyWidgetService extends Service {
         //filter.addAction(Intent.ACTION_TIME_TICK);
         filter.addAction(Intent.ACTION_TIME_CHANGED);
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
         mContext.registerReceiver(mIntentReceiver, filter);
 
         mFormatChangeObserver = new FormatChangeObserver();
@@ -134,6 +138,8 @@ public class FuzzyWidgetService extends Service {
         mHandler.removeCallbacks(mUpdateTimeRunnable);
         if (!mCanDie) {
             // Oh fuck the system is killing us...
+            // Make sure the ui is up to date
+            updateTime();
             // Schedule a restart on next time tick in case we're not restarted in time.
             scheduleRestart();
         }
@@ -223,17 +229,17 @@ public class FuzzyWidgetService extends Service {
     }
 
     private void scheduleRestart() {
-        FuzzyLogic fuzzyLogic = new FuzzyLogic();
-        fuzzyLogic.updateTime();
-        long nextMilli = fuzzyLogic.getNextIntervalMilli();
+        mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
+        mFuzzyLogic.updateTime();
+        long nextMilli = mFuzzyLogic.getNextIntervalMilli();
         Intent nextUpdate = new Intent(mContext, FuzzyWidgetService.class);
         PendingIntent pi = PendingIntent.getService(mContext, 0, nextUpdate, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            am.setExact(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+            am.setExact(AlarmManager.RTC, mFuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
         } else {
-            am.set(AlarmManager.RTC, fuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
+            am.set(AlarmManager.RTC, mFuzzyLogic.getCalendar().getTimeInMillis() + nextMilli, pi);
         }
         Log.i(TAG, "Scheduled service restart for " + (nextMilli/1000) + "s from now");
     }

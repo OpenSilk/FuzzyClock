@@ -54,6 +54,7 @@ public class FuzzyWidgetSettings extends FuzzySettings {
     @Override
     public void onClick(View v) {
         if (v == mButtonDone) {
+            mFuzzyPrefs.save();
             // Force refresh;
             startService(new Intent(this, FuzzyWidgetService.class));
             setResult(RESULT_OK, mResult);

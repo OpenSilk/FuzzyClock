@@ -65,11 +65,13 @@ public class FuzzyLogic {
         } else if (minutes >= 46) { minState = 3;
         } else if (minutes >= 41) { minState = 4;
         } else if (minutes >= 36) { minState = 5;
-        } else if (minutes >= 25) { minState = 6;
-        } else if (minutes >= 20) { minState = 7;
-        } else if (minutes >= 15) { minState = 8;
-        } else if (minutes >= 10) { minState = 9;
-        } else if (minutes >= 5)  { minState = 10;
+        } else if (minutes == 35) { minState = 6;
+        } else if (minutes >= 30) { minState = 7;
+        } else if (minutes >= 25) { minState = 8;
+        } else if (minutes >= 20) { minState = 9;
+        } else if (minutes >= 15) { minState = 10;
+        } else if (minutes >= 10) { minState = 11;
+        } else if (minutes >= 5)  { minState = 12;
         } else                    { minState = 1;
         }
         return minState;
@@ -84,7 +86,9 @@ public class FuzzyLogic {
         } else if (minutes >= 46) { minutes = 51;
         } else if (minutes >= 41) { minutes = 46;
         } else if (minutes >= 36) { minutes = 41;
-        } else if (minutes >= 25) { minutes = 36;
+        } else if (minutes == 35) { minutes = 36;
+        } else if (minutes >= 30) { minutes = 35;
+        } else if (minutes >= 25) { minutes = 30;
         } else if (minutes >= 20) { minutes = 25;
         } else if (minutes >= 15) { minutes = 20;
         } else if (minutes >= 10) { minutes = 15;
@@ -111,7 +115,9 @@ public class FuzzyLogic {
         } else if (minutes >= 46) { timeM = R.string.fuzzy_ten;
         } else if (minutes >= 41) { timeM = R.string.fuzzy_quarter;
         } else if (minutes >= 36) { timeM = R.string.fuzzy_twenty;
-        } else if (minutes >= 25) { timeM = R.string.fuzzy_half;
+        } else if (minutes == 35) { timeM = R.string.fuzzy_twenty_five;
+        } else if (minutes >= 30) { timeM = R.string.fuzzy_half;
+        } else if (minutes >= 25) { timeM = R.string.fuzzy_twenty_five;
         } else if (minutes >= 20) { timeM = R.string.fuzzy_twenty;
         } else if (minutes >= 15) { timeM = R.string.fuzzy_quarter;
         } else if (minutes >= 10) { timeM = R.string.fuzzy_ten;
@@ -120,7 +126,7 @@ public class FuzzyLogic {
         }
 
         // Adjust for next hour
-        if (minutes >= 36) {
+        if (minutes >= 35) {
             if (m24HourFormat) {
                 hours = (hours + 1) % 24;
             } else {
@@ -166,7 +172,7 @@ public class FuzzyLogic {
             }
         } else {
             if (hours == 0) {
-                if (minutes >= 36) {
+                if (minutes >= 35) {
                     timeH = (mCalendar.get(Calendar.AM_PM) == Calendar.PM) ?
                             R.string.fuzzy_midnight : R.string.fuzzy_noon;
                 } else {
@@ -177,7 +183,7 @@ public class FuzzyLogic {
         }
 
         // Final shuffle
-        if (minutes >= 56) {
+        if (minutes >= 56 || minutes < 5) {
             separator = (hours > 12) ? R.string.fuzzy_hundred : R.string.fuzzy_oclock;
             if (hours == 0 || (m24HourFormat && (hours == 12))) {
                 separator = timeH;
@@ -186,20 +192,12 @@ public class FuzzyLogic {
                 timeM = timeH;
             }
             timeH = -1;
-        } else if (minutes >= 36) {
+        } else if (minutes >= 35) {
             separator = R.string.fuzzy_to;
-        } else if (minutes >= 5) {
-            separator = R.string.fuzzy_past;
         } else {
-            separator = (hours > 12) ? R.string.fuzzy_hundred : R.string.fuzzy_oclock;
-            if (hours == 0 || (m24HourFormat && (hours == 12))) {
-                separator = timeH;
-                timeM = -1;
-            } else {
-                timeM = timeH;
-            }
-            timeH = -1;
+            separator = R.string.fuzzy_past;
         }
+
         return new FuzzyTime(timeM, timeH, separator);
     }
 

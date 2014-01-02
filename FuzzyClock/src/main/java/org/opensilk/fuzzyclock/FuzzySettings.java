@@ -85,7 +85,7 @@ abstract class FuzzySettings extends Activity implements
 
         mFuzzyClock = (FuzzyClockView) findViewById(R.id.time);
         mFuzzyClock.setLive(false);
-        mFuzzyClock.updateTime(11,20);
+        mFuzzyClock.updateTime(0,26);
 
         mMinutes = findViewById(R.id.timeDisplayMinutes);
         mMinutes.setOnClickListener(this);

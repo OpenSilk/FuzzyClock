@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="fuzzy_font_size_min">22</integer>
+    <integer name="fuzzy_font_size_max">80</integer>
+    <integer name="fuzzy_font_size_default">36</integer>
+</resources>

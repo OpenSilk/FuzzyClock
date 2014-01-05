@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
- *  Copyright (C) 2013 OpenSilk Productions LLC
+/*
+ *  Copyright (C) 2014 OpenSilk Productions LLC
  *
  *  This file is part of Fuzzy Clock
  *
@@ -15,14 +14,31 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
--->
-<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="40dp"
-    android:resizeMode="horizontal|vertical"
-    android:updatePeriodMillis="0"
-    android:initialLayout="@layout/fuzzy_widget_horizontal"
-    android:configure="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
-    android:widgetCategory="home_screen|keyguard">
+ */
+package org.opensilk.fuzzyclock;
 
-</appwidget-provider>
+public interface IFuzzyClockView {
+    public void updateColors();
+
+    public void setMinuteColor(int res);
+
+    public void setHourColor(int res);
+
+    public void setSeparatorColor(int res);
+
+    public void setFontSize(float size);
+
+    public void loadPreferences(FuzzyPrefs prefs);
+
+    public void setLive(boolean live);
+
+    public void updateTime(int hour, int minute);
+
+    public boolean is24HourFormat();
+
+    public void registerCallback(TimeChangedListener l);
+
+    public interface TimeChangedListener {
+        public void onTimeChanged();
+    }
+}

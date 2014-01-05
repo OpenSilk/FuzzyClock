@@ -30,21 +30,24 @@ public class FuzzyWidget extends AppWidgetProvider {
     private static final String TAG = FuzzyWidget.class.getSimpleName();
     private static final boolean LOGV = true;
 
+    @DebugLog
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        if (LOGV) Log.v(TAG, "onUpdate");
         pokeService(context);
     }
 
+    @DebugLog
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        if (LOGV) Log.v(TAG, "onDeleted");
+        for (int id: appWidgetIds) {
+            new FuzzyPrefs(context, id).remove();
+        }
         pokeService(context);
     }
 
+    @DebugLog
     @Override
     public void onDisabled(Context context) {
-        if (LOGV) Log.v(TAG, "onDisabled");
     }
 
     @DebugLog

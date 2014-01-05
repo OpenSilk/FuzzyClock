@@ -41,14 +41,14 @@
     <string name="fuzzy_eighteen">EIGHTEEN</string>
     <string name="fuzzy_nineteen">NINETEEN</string>
     <string name="fuzzy_twenty">TWENTY</string>
-    <string name="fuzzy_twenty_one">TWENTYONE</string>
-    <string name="fuzzy_twenty_two">TWENTYTWO</string>
-    <string name="fuzzy_twenty_three">TWENTYTHREE</string>
-    <string name="fuzzy_twenty_four">TWENTYFOUR</string>
-    <string name="fuzzy_twenty_five">TWENTYFIVE</string>
+    <string name="fuzzy_twenty_one">TWENTY-ONE</string>
+    <string name="fuzzy_twenty_two">TWENTY-TWO</string>
+    <string name="fuzzy_twenty_three">TWENTY-THREE</string>
+    <string name="fuzzy_twenty_four">TWENTY-FOUR</string>
+    <string name="fuzzy_twenty_five">TWENTY-FIVE</string>
 
     <string name="fuzzy_half">HALF</string>
-    <string name="fuzzy_hundred">HUNDRED</string>
+    <string name="fuzzy_hours">HOURS</string>
     <string name="fuzzy_midnight">MIDNIGHT</string>
     <string name="fuzzy_noon">NOON</string>
     <string name="fuzzy_oclock">O\'CLOCK</string>
@@ -56,7 +56,10 @@
     <string name="fuzzy_quarter">QUARTER</string>
     <string name="fuzzy_to">TO</string>
 
-    <!-- Generic Resources -->
+    <!-- Settings Resources -->
+    <string name="settings_title">Fuzzy dream settings</string>
+    <string name="settings_title_widget">Fuzzy widget settings</string>
+
     <string name="holo_blue">Holo blue</string>
     <string name="holo_red">Holo red</string>
     <string name="holo_green">Holo green</string>
@@ -65,13 +68,10 @@
     <string name="white">White</string>
 
     <string name="reset">Reset</string>
-
-    <!-- Settings Resources -->
-    <string name="settings_title">Fuzzy dream settings</string>
-    <string name="settings_title_widget">Fuzzy widget settings</string>
-
+    <string name="horizontal">Horizontal</string>
+    <string name="vertical">Vertical</string>
+    <string name="staggered">Staggered</string>
     <string name="picker_adjust_size">Adjust size</string>
-
-    <string name="settings_help">Tips:\n1) Click on the words to change colors.\n2) Scroll the wheel to change size.\n3) Rotate to change landscape size.</string>
+    <string name="settings_help">Tips:\n1) Click on the words to change colors.\n2) Scroll the wheel to change size.\n3) Make sure to rotate device to setup landscape options.</string>
 
 </resources>

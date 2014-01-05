@@ -39,10 +39,11 @@ public class FuzzyLogic {
     }
 
     public void setDateFormat(boolean is24hour) {
-        m24HourFormat = is24hour;
+        // From what i've read countries using 24hour time generally speak the time in 12hour format
+        //m24HourFormat = is24hour;
     }
 
-    public boolean getDateFormat() {
+    public boolean is24HourFormat() {
         return m24HourFormat;
     }
 
@@ -184,17 +185,19 @@ public class FuzzyLogic {
 
         // Final shuffle
         if (minutes >= 56 || minutes < 5) {
-            separator = (hours > 12) ? R.string.fuzzy_hundred : R.string.fuzzy_oclock;
-            if (hours == 0 || (m24HourFormat && (hours == 12))) {
+            if (hours == 0 || hours == 12) {
+                // Separator show noon/midnight
                 separator = timeH;
-                timeM = -1;
+                timeH = timeM = -1;
             } else {
+                // put hour in minutes place
                 timeM = timeH;
+                timeH = R.string.fuzzy_oclock;
+                separator = -1;
             }
-            timeH = -1;
         } else if (minutes >= 35) {
             separator = R.string.fuzzy_to;
-        } else {
+        } else /* minutes >= 5 */ {
             separator = R.string.fuzzy_past;
         }
 

@@ -17,6 +17,7 @@
  */
 package org.opensilk.fuzzyclock;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -24,21 +25,26 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.SpinnerAdapter;
 
 import hugo.weaving.DebugLog;
 
 import static android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS;
+import static android.app.ActionBar.NAVIGATION_MODE_LIST;
 
 abstract class FuzzySettings extends Activity implements
         View.OnClickListener,
-        NumberPicker.OnValueChangeListener {
+        NumberPicker.OnValueChangeListener,
+        ActionBar.OnNavigationListener {
 
     protected FuzzyPrefs mFuzzyPrefs;
 
-    protected FuzzyClockView mFuzzyClock;
+    protected IFuzzyClockView mFuzzyClock;
     protected View mMinutes, mHours, mSeparator;
     protected Button mButtonDone, mButtonReset;
 
@@ -57,6 +63,8 @@ abstract class FuzzySettings extends Activity implements
             android.R.color.white,
     };
 
+    private boolean mFirstRun;
+
     @DebugLog
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +75,8 @@ abstract class FuzzySettings extends Activity implements
         mRoot.addView(getLayoutInflater().inflate(R.layout.fuzzy_settings, mRoot, false));
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean firstRun = prefs.getBoolean("first_run", true);
-        if (firstRun) {
+        mFirstRun = prefs.getBoolean("first_run", true);
+        if (mFirstRun) {
             mTipsView = getLayoutInflater().inflate(R.layout.fuzzy_settings_tips, mRoot, false);
             mRoot.addView(mTipsView);
             //prefs.edit().putBoolean("first_run", false).commit();
@@ -83,18 +91,12 @@ abstract class FuzzySettings extends Activity implements
                 getString(R.string.white)
         };
 
-        mFuzzyClock = (FuzzyClockView) findViewById(R.id.time);
-        mFuzzyClock.setLive(false);
-        mFuzzyClock.updateTime(0,26);
+        SpinnerAdapter spinner = ArrayAdapter.createFromResource(this,
+                R.array.style_list,
+                android.R.layout.simple_spinner_dropdown_item);
 
-        mMinutes = findViewById(R.id.timeDisplayMinutes);
-        mMinutes.setOnClickListener(this);
-
-        mHours = findViewById(R.id.timeDisplayHours);
-        mHours.setOnClickListener(this);
-
-        mSeparator = findViewById(R.id.timeDisplaySeparator);
-        mSeparator.setOnClickListener(this);
+        getActionBar().setListNavigationCallbacks(spinner, this);
+        getActionBar().setNavigationMode(NAVIGATION_MODE_LIST);
 
         mPicker = (NumberPicker) findViewById(R.id.numberPicker);
         mPicker.setOnValueChangedListener(this);
@@ -109,10 +111,7 @@ abstract class FuzzySettings extends Activity implements
         mButtonReset = (Button) findViewById(R.id.button_reset);
         mButtonReset.setOnClickListener(this);
 
-        if (firstRun) {
-            mMinutes.setEnabled(false);
-            mHours.setEnabled(false);
-            mSeparator.setEnabled(false);
+        if (mFirstRun) {
             mPicker.setEnabled(false);
             mButtonDone.setEnabled(false);
             mButtonReset.setEnabled(false);
@@ -126,7 +125,7 @@ abstract class FuzzySettings extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
-        mFuzzyClock.loadPreferences(mFuzzyPrefs);
+        getActionBar().setSelectedNavigationItem(mFuzzyPrefs.style);
         mPicker.setValue((int) mFuzzyPrefs.size);
     }
 
@@ -138,6 +137,7 @@ abstract class FuzzySettings extends Activity implements
     }
 
     @DebugLog
+    @Override
     public void onClick(View v) {
         if (v == mMinutes) {
             chooseMinuteColor();
@@ -147,11 +147,7 @@ abstract class FuzzySettings extends Activity implements
             chooseSeparatorColor();
         } else if (v == mButtonReset) {
             mFuzzyPrefs.reset();
-            mFuzzyClock.setMinuteColor(mFuzzyPrefs.color.minute);
-            mFuzzyClock.setHourColor(mFuzzyPrefs.color.hour);
-            mFuzzyClock.setSeparatorColor(mFuzzyPrefs.color.separator);
-            mFuzzyClock.updateColors();
-            mFuzzyClock.setFontSize(mFuzzyPrefs.size);
+            getActionBar().setSelectedNavigationItem(mFuzzyPrefs.style);
             mPicker.setValue((int) mFuzzyPrefs.size);
         } else if (v == mButtonDone) {
             finish();
@@ -163,6 +159,7 @@ abstract class FuzzySettings extends Activity implements
             mButtonDone.setEnabled(true);
             mButtonReset.setEnabled(true);
             mRoot.removeView(mTipsView);
+            mFirstRun = false;
         }
     }
 
@@ -171,6 +168,53 @@ abstract class FuzzySettings extends Activity implements
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         mFuzzyClock.setFontSize(newVal);
         mFuzzyPrefs.size = (float) newVal;
+    }
+
+    @DebugLog
+    @Override
+    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        mFuzzyPrefs.style = itemPosition;
+        LinearLayout wrapper = (LinearLayout) findViewById(R.id.clock_wrapper);
+        wrapper.removeAllViews();
+        switch (itemPosition) {
+            case FuzzyPrefs.STYLE_STAGGERED:
+                getLayoutInflater().inflate(R.layout.fuzzy_clock_staggered, wrapper, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_staggered);
+                break;
+            case FuzzyPrefs.STYLE_VERTICAL:
+                getLayoutInflater().inflate(R.layout.fuzzy_clock_vertical, wrapper, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_vertical);
+                break;
+            case FuzzyPrefs.STYLE_HORIZONTAL:
+            default:
+                getLayoutInflater().inflate(R.layout.fuzzy_clock_horizontal, wrapper, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_horizontal);
+                break;
+        }
+        initFuzzyClockViews();
+        return true;
+    }
+
+    @DebugLog
+    private void initFuzzyClockViews() {
+        mFuzzyClock.setLive(false);
+        mFuzzyClock.updateTime(0,26);
+        mFuzzyClock.loadPreferences(mFuzzyPrefs);
+
+        mMinutes = findViewById(R.id.timeDisplayMinutes);
+        mMinutes.setOnClickListener(this);
+
+        mHours = findViewById(R.id.timeDisplayHours);
+        mHours.setOnClickListener(this);
+
+        mSeparator = findViewById(R.id.timeDisplaySeparator);
+        mSeparator.setOnClickListener(this);
+
+        if (mFirstRun) {
+            mMinutes.setEnabled(false);
+            mHours.setEnabled(false);
+            mSeparator.setEnabled(false);
+        }
     }
 
     @DebugLog

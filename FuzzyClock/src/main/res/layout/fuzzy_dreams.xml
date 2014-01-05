@@ -25,18 +25,14 @@
 
     <!--  Extra layout to let the clock float in the window -->
     <LinearLayout
-        android:id="@+id/main_clock"
+        android:id="@+id/clock_wrapper"
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="@dimen/activity_vertical_margin">
 
-        <include layout="@layout/fuzzy_clock"
-            android:id="@+id/fuzzy_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_gravity="center"/>
+        <!--fuzzy clock view inserted here-->
+
     </LinearLayout>
 
 </LinearLayout>

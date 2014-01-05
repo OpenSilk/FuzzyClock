@@ -35,12 +35,10 @@ import hugo.weaving.DebugLog;
 
 import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
-public class FuzzyClockView extends LinearLayout {
-
-    private static final String TAG = FuzzyClockView.class.getSimpleName();
+public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyClockView {
 
     private FuzzyLogic mFuzzyLogic = new FuzzyLogic();
-    private TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
+    protected TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;
     private boolean mAttached;
@@ -58,22 +56,24 @@ public class FuzzyClockView extends LinearLayout {
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mLive && intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
-                mFuzzyLogic.setCalendar(Calendar.getInstance());
-            }
-            if (mLive && intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (updateLogic()) updateTime();
-                    }
-                });
-            } else {
-                mHandler.post(new Runnable() {
-                    public void run() {
-                        updateTime();
-                    }
-                });
+            if (mLive) {
+                if (Intent.ACTION_TIMEZONE_CHANGED.equals(intent.getAction())) {
+                    mFuzzyLogic.setCalendar(Calendar.getInstance());
+                }
+                if (Intent.ACTION_TIME_TICK.equals(intent.getAction())) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (updateLogic()) updateTime();
+                        }
+                    });
+                } else {
+                    mHandler.post(new Runnable() {
+                        public void run() {
+                            updateTime();
+                        }
+                    });
+                }
             }
         }
     };
@@ -89,15 +89,11 @@ public class FuzzyClockView extends LinearLayout {
         }
     }
 
-    public interface TimeChangedListener {
-        public void onTimeChanged();
-    }
-
-    public FuzzyClockView(Context context) {
+    public FuzzyClockViewHorizontal(Context context) {
         this(context, null);
     }
 
-    public FuzzyClockView(Context context, AttributeSet attrs) {
+    public FuzzyClockViewHorizontal(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -118,14 +114,14 @@ public class FuzzyClockView extends LinearLayout {
         if (mAttached) return;
         mAttached = true;
 
-        if (mLive) {
+        //if (mLive) {
             /* monitor time ticks, time changed, timezone */
             IntentFilter filter = new IntentFilter();
             filter.addAction(Intent.ACTION_TIME_TICK);
             filter.addAction(Intent.ACTION_TIME_CHANGED);
             filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
             getContext().registerReceiver(mIntentReceiver, filter);
-        }
+        //}
 
         /* monitor 12/24-hour display preference */
         mFormatChangeObserver = new FormatChangeObserver();
@@ -141,15 +137,15 @@ public class FuzzyClockView extends LinearLayout {
         if (!mAttached) return;
         mAttached = false;
 
-        if (mLive) {
+        //if (mLive) {
             getContext().unregisterReceiver(mIntentReceiver);
-        }
+        //}
         getContext().getContentResolver().unregisterContentObserver(
                 mFormatChangeObserver);
     }
 
     @DebugLog
-    private boolean updateLogic() {
+    protected boolean updateLogic() {
         if (mLive) {
             mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
         }
@@ -186,9 +182,27 @@ public class FuzzyClockView extends LinearLayout {
         CharSequence separator = (time.separator != -1) ? getResources().getString(time.separator) : "";
 
         // Write time to the display
-        mTimeDisplayMinutes.setText(timeM);
-        mTimeDisplayHours.setText(timeH);
-        mTimeDisplaySeparator.setText(separator);
+
+        if (time.minute == -1 ) {
+            mTimeDisplayMinutes.setVisibility(GONE);
+        } else {
+            mTimeDisplayMinutes.setText(timeM);
+            mTimeDisplayMinutes.setVisibility(VISIBLE);
+        }
+
+        if (time.separator == -1) {
+            mTimeDisplaySeparator.setVisibility(GONE);
+        } else {
+            mTimeDisplaySeparator.setText(separator);
+            mTimeDisplaySeparator.setVisibility(VISIBLE);
+        }
+
+        if (time.hour == -1) {
+            mTimeDisplayHours.setVisibility(GONE);
+        } else {
+            mTimeDisplayHours.setText(timeH);
+            mTimeDisplayHours.setVisibility(VISIBLE);
+        }
 
         // Update accessibility string.
         StringBuilder fullTimeStr = new StringBuilder();
@@ -220,7 +234,7 @@ public class FuzzyClockView extends LinearLayout {
         mSeparatorColorRes = res;
     }
 
-    private void updateSize() {
+    protected void updateSize() {
         mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, mFontSize);
@@ -241,8 +255,11 @@ public class FuzzyClockView extends LinearLayout {
     }
 
     private void setDateFormat() {
-        mFuzzyLogic.setDateFormat(false); //TODO fix support for 24hour
-        //mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
+        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
+    }
+
+    public boolean is24HourFormat() {
+        return mFuzzyLogic.is24HourFormat();
     }
 
     public void setLive(boolean live) {

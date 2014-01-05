@@ -25,29 +25,50 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 public class FuzzyPrefs {
 
-    public static final String DREAM_COLOR_MINUTE = "color_minute_dream";
-    public static final String DREAM_COLOR_HOUR = "color_hour_dream";
-    public static final String DREAM_COLOR_SEPARATOR = "color_separator_dream";
-    public static final String DREAM_FONT_SIZE_PORT = "font_size_port_dream";
-    public static final String DREAM_FONT_SIZE_LAND = "font_size_land_dream";
+    private static final String DREAM_COLOR_MINUTE_PORT = "dream_color_minute_port";
+    private static final String DREAM_COLOR_MINUTE_LAND = "dream_color_minute_land";
+    private static final String DREAM_COLOR_SEPARATOR_PORT = "dream_color_separator_port";
+    private static final String DREAM_COLOR_SEPARATOR_LAND = "dream_color_separator_land";
+    private static final String DREAM_COLOR_HOUR_PORT = "dream_color_hour_port";
+    private static final String DREAM_COLOR_HOUR_LAND = "dream_color_hour_land";
+    private static final String DREAM_FONT_SIZE_PORT = "dream_font_size_port";
+    private static final String DREAM_FONT_SIZE_LAND = "dream_font_size_land";
+    private static final String DREAM_STYLE_PORT = "dream_style_port";
+    private static final String DREAM_STYLE_LAND = "dream_style_land";
 
-    public static final String WIDGET_COLOR_MINUTE = "color_minute_widget_";
-    public static final String WIDGET_COLOR_HOUR = "color_hour_widget_";
-    public static final String WIDGET_COLOR_SEPARATOR = "color_separator_widget_";
-    public static final String WIDGET_FONT_SIZE_PORT = "font_size_port_widget_";
-    public static final String WIDGET_FONT_SIZE_LAND = "font_size_land_widget_";
+    private static final String WIDGET_COLOR_MINUTE_PORT = "widget_%d_color_minute_port";
+    private static final String WIDGET_COLOR_MINUTE_LAND = "widget_%d_color_minute_land";
+    private static final String WIDGET_COLOR_SEPARATOR_PORT = "widget_%d_color_separator_port";
+    private static final String WIDGET_COLOR_SEPARATOR_LAND = "widget_%d_color_separator_land";
+    private static final String WIDGET_COLOR_HOUR_PORT = "widget_%d_color_hour_port";
+    private static final String WIDGET_COLOR_HOUR_LAND = "widget_%d_color_hour_land";
+    private static final String WIDGET_FONT_SIZE_PORT = "widget_%d_font_size_port";
+    private static final String WIDGET_FONT_SIZE_LAND = "widget_%d_font_size_land";
+    private static final String WIDGET_STYLE_PORT = "widget_%d_style_port";
+    private static final String WIDGET_STYLE_LAND = "widget_%d_style_land";
+
+    public static final int STYLE_HORIZONTAL = 0;
+    public static final int STYLE_VERTICAL = 1;
+    public static final int STYLE_STAGGERED = 2;
+    public static final int STYLE_DEFAULT = STYLE_HORIZONTAL;
 
     private final Context mContext;
-    private final boolean isPortrait;
     private final int mWidgetId;
+
+    private String mPrefMin;
+    private String mPrefSep;
+    private String mPrefHour;
+    private String mPrefSize;
+    private String mPrefStyle;
 
     public final FuzzyColor color = new FuzzyColor();
     public float size;
+    public int style;
 
     public class FuzzyColor {
         public int minute;
-        public int hour;
         public int separator;
+        public int hour;
     }
 
     public FuzzyPrefs(Context context) {
@@ -56,58 +77,77 @@ public class FuzzyPrefs {
 
     public FuzzyPrefs(Context context, int widgetId) {
         mContext = context;
-        isPortrait = mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT;
         mWidgetId = widgetId;
         init();
     }
 
     private void init() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        init(mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT);
+    }
+
+    private void init(boolean isPortrait) {
         if (mWidgetId == -1) {
-            color.minute = prefs.getInt(DREAM_COLOR_MINUTE, android.R.color.white);
-            color.hour = prefs.getInt(DREAM_COLOR_HOUR, android.R.color.white);
-            color.separator = prefs.getInt(DREAM_COLOR_SEPARATOR, android.R.color.holo_blue_light);
-            String fontPref = isPortrait ? DREAM_FONT_SIZE_PORT : DREAM_FONT_SIZE_LAND;
-            size = prefs.getFloat(fontPref,
-                    (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+            mPrefMin = isPortrait ? DREAM_COLOR_MINUTE_PORT : DREAM_COLOR_MINUTE_LAND;
+            mPrefSep = isPortrait ? DREAM_COLOR_SEPARATOR_PORT : DREAM_COLOR_SEPARATOR_LAND;
+            mPrefHour = isPortrait ? DREAM_COLOR_HOUR_PORT : DREAM_COLOR_HOUR_LAND;
+            mPrefSize = isPortrait ? DREAM_FONT_SIZE_PORT : DREAM_FONT_SIZE_LAND;
+            mPrefStyle = isPortrait ? DREAM_STYLE_PORT : DREAM_STYLE_LAND;
         } else {
-            String id = String.valueOf(mWidgetId);
-            color.minute = prefs.getInt(WIDGET_COLOR_MINUTE+id, android.R.color.white);
-            color.hour = prefs.getInt(WIDGET_COLOR_HOUR+id, android.R.color.white);
-            color.separator = prefs.getInt(WIDGET_COLOR_SEPARATOR + id, android.R.color.holo_blue_light);
-            String fontPref = isPortrait ? WIDGET_FONT_SIZE_PORT+id : WIDGET_FONT_SIZE_LAND+id;
-            size = prefs.getFloat(fontPref,
-                    (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+            mPrefMin = String.format(isPortrait ? WIDGET_COLOR_MINUTE_PORT : WIDGET_COLOR_MINUTE_LAND, mWidgetId);
+            mPrefSep = String.format(isPortrait ? WIDGET_COLOR_SEPARATOR_PORT : WIDGET_COLOR_SEPARATOR_LAND, mWidgetId);
+            mPrefHour = String.format(isPortrait ? WIDGET_COLOR_HOUR_PORT : WIDGET_COLOR_HOUR_LAND, mWidgetId);
+            mPrefSize = String.format(isPortrait ? WIDGET_FONT_SIZE_PORT : WIDGET_FONT_SIZE_LAND, mWidgetId);
+            mPrefStyle = String.format(isPortrait ? WIDGET_STYLE_PORT : WIDGET_STYLE_LAND, mWidgetId);
         }
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        color.minute = prefs.getInt(mPrefMin, android.R.color.white);
+        color.separator = prefs.getInt(mPrefSep, android.R.color.holo_blue_light);
+        color.hour = prefs.getInt(mPrefHour, android.R.color.white);
+        size = prefs.getFloat(mPrefSize, (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+        style = prefs.getInt(mPrefStyle, STYLE_DEFAULT);
     }
 
     public void reset() {
         color.minute = color.hour = android.R.color.white;
         color.separator = android.R.color.holo_blue_light;
         size = mContext.getResources().getInteger(R.integer.fuzzy_font_size_default);
+        style = STYLE_DEFAULT;
     }
 
     public void save() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        if (mWidgetId == -1) {
-            String fontPref = isPortrait ? DREAM_FONT_SIZE_PORT : DREAM_FONT_SIZE_LAND;
-            prefs.edit().putInt(DREAM_COLOR_MINUTE, color.minute)
-                    .putInt(DREAM_COLOR_HOUR, color.hour)
-                    .putInt(DREAM_COLOR_SEPARATOR, color.separator)
-                    .putFloat(fontPref, size).commit();
-        } else {
-            String id = String.valueOf(mWidgetId);
-            String fontPref = isPortrait ? WIDGET_FONT_SIZE_PORT+id : WIDGET_FONT_SIZE_LAND+id;
-            prefs.edit().putInt(WIDGET_COLOR_MINUTE + id, color.minute)
-                    .putInt(WIDGET_COLOR_HOUR + id, color.hour)
-                    .putInt(WIDGET_COLOR_SEPARATOR + id, color.separator)
-                    .putFloat(fontPref, size).commit();
-        }
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        prefs.edit()
+                .putInt(mPrefMin, color.minute)
+                .putInt(mPrefSep, color.separator)
+                .putInt(mPrefHour, color.hour)
+                .putFloat(mPrefSize, size)
+                .putInt(mPrefStyle, style)
+                .commit();
+    }
+
+    public void remove() {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        init(true); //Portrait prefs
+        prefs.edit()
+                .remove(mPrefMin)
+                .remove(mPrefSep)
+                .remove(mPrefHour)
+                .remove(mPrefSize)
+                .remove(mPrefStyle)
+                .apply();
+        init(false); //Landscape prefs
+        prefs.edit()
+                .remove(mPrefMin)
+                .remove(mPrefSep)
+                .remove(mPrefHour)
+                .remove(mPrefSize)
+                .remove(mPrefStyle)
+                .apply();
     }
 
     @Override
     public String toString() {
-        return String.format("min=%d, hour=%d, sep=%d, size=%.2f",
-                color.minute, color.hour, color.separator, size);
+        return String.format("min=%d, hour=%d, sep=%d, size=%.2f style=%d",
+                color.minute, color.hour, color.separator, size, style);
     }
 }

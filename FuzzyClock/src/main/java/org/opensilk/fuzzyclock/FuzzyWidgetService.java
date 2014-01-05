@@ -33,6 +33,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
 import java.util.Calendar;
@@ -183,17 +185,44 @@ public class FuzzyWidgetService extends Service {
                     continue; // Once setup is done we will be called again.
                 }
                 if (LOGV) Log.v(TAG, "Updating widget view id=" + id + " " + settings.toString());
-                RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget);
-                views.setTextViewText(R.id.timeDisplayMinutes, timeM);
-                views.setTextViewText(R.id.timeDisplayHours, timeH);
-                views.setTextViewText(R.id.timeDisplaySeparator, separator);
-                views.setTextColor(R.id.timeDisplayMinutes, getResources().getColor(settings.color.minute));
-                views.setTextColor(R.id.timeDisplayHours, getResources().getColor(settings.color.hour));
-                views.setTextColor(R.id.timeDisplaySeparator, getResources().getColor(settings.color.separator));
-                views.setTextViewTextSize(R.id.timeDisplayMinutes, COMPLEX_UNIT_SP, settings.size);
-                views.setTextViewTextSize(R.id.timeDisplayHours, COMPLEX_UNIT_SP, settings.size);
-                views.setTextViewTextSize(R.id.timeDisplaySeparator, COMPLEX_UNIT_SP, settings.size);
-                views.setContentDescription(R.id.time, fullTimeStr);
+                RemoteViews views;
+                switch (settings.style) {
+                    case FuzzyPrefs.STYLE_STAGGERED:
+                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_staggered);
+                        break;
+                    case FuzzyPrefs.STYLE_VERTICAL:
+                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_vertical);
+                        break;
+                    case FuzzyPrefs.STYLE_HORIZONTAL:
+                    default:
+                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_horizontal);
+                        break;
+                }
+                if (time.minute == -1) {
+                    views.setViewVisibility(R.id.timeDisplayMinutes, View.GONE);
+                } else {
+                    views.setTextViewText(R.id.timeDisplayMinutes, timeM);
+                    views.setTextColor(R.id.timeDisplayMinutes, getResources().getColor(settings.color.minute));
+                    views.setTextViewTextSize(R.id.timeDisplayMinutes, COMPLEX_UNIT_SP, settings.size);
+                    views.setViewVisibility(R.id.timeDisplayMinutes, View.VISIBLE);
+                }
+                if (time.separator == -1) {
+                    views.setViewVisibility(R.id.timeDisplaySeparator, View.GONE);
+                } else {
+                    views.setTextViewText(R.id.timeDisplaySeparator, separator);
+                    views.setTextColor(R.id.timeDisplaySeparator, getResources().getColor(settings.color.separator));
+                    views.setTextViewTextSize(R.id.timeDisplaySeparator, COMPLEX_UNIT_SP, settings.size);
+                    views.setViewVisibility(R.id.timeDisplaySeparator, View.VISIBLE);
+                }
+                if (time.hour == -1) {
+                    views.setViewVisibility(R.id.timeDisplayHours, View.GONE);
+                } else {
+                    views.setTextViewText(R.id.timeDisplayHours, timeH);
+                    views.setTextColor(R.id.timeDisplayHours, getResources().getColor(settings.color.hour));
+                    views.setTextViewTextSize(R.id.timeDisplayHours, COMPLEX_UNIT_SP, settings.size);
+                    views.setViewVisibility(R.id.timeDisplayHours, View.VISIBLE);
+                }
+                views.setContentDescription(R.id.fuzzy_clock, fullTimeStr);
                 mWidgetManager.updateAppWidget(id, views);
             }
             Log.i(TAG, "Scheduling next clock update for "

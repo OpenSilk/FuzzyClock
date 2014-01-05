@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- *  Copyright (C) 2013 OpenSilk Productions LLC
+ *  Copyright (C) 2014 OpenSilk Productions LLC
  *
  *  This file is part of Fuzzy Clock
  *
@@ -16,13 +16,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="40dp"
-    android:resizeMode="horizontal|vertical"
-    android:updatePeriodMillis="0"
-    android:initialLayout="@layout/fuzzy_widget_horizontal"
-    android:configure="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
-    android:widgetCategory="home_screen|keyguard">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fuzzy_clock"
+    android:orientation="horizontal"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
 
-</appwidget-provider>
+    <include layout="@layout/fuzzy_clock_linear_base"/>
+
+</LinearLayout>

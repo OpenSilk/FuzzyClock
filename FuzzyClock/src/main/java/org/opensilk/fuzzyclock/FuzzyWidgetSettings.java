@@ -29,7 +29,7 @@ import static android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID;
 public class FuzzyWidgetSettings extends FuzzySettings {
 
     private int mAppWidgetId = INVALID_APPWIDGET_ID;
-    private Intent mResult = new Intent();
+    private final Intent mResult = new Intent();
 
     @DebugLog
     @Override

@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.service.dreams.DreamService;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import hugo.weaving.DebugLog;
 
@@ -31,7 +32,7 @@ public class FuzzyDreams extends DreamService {
     private static final boolean LOGV = true;
 
     private View mContentView, mSaverView;
-    private FuzzyClockView mFuzzyClock;
+    private IFuzzyClockView mFuzzyClock;
 
     private final Handler mHandler = new Handler();
 
@@ -53,7 +54,7 @@ public class FuzzyDreams extends DreamService {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mHandler.removeCallbacks(mMoveSaverRunnable);
-        setLayout();
+        setupLayout();
         mHandler.post(mMoveSaverRunnable);
     }
 
@@ -61,11 +62,11 @@ public class FuzzyDreams extends DreamService {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        // We want the screen saver to exit upon user interaction.
         setInteractive(false);
         setFullscreen(true);
-        setLayout();
+        setScreenBright(false);
         mHandler.removeCallbacks(mMoveSaverRunnable);
+        setupLayout();
         mHandler.post(mMoveSaverRunnable);
     }
 
@@ -76,21 +77,37 @@ public class FuzzyDreams extends DreamService {
         mHandler.removeCallbacks(mMoveSaverRunnable);
     }
 
-    private void setLayout() {
+    private void setupLayout() {
         setContentView(R.layout.fuzzy_dreams);
-        setScreenBright(false);
 
-        mFuzzyClock = (FuzzyClockView) findViewById(R.id.time);
-        mFuzzyClock.registerCallback(mListener);
-        mFuzzyClock.loadPreferences(new FuzzyPrefs(this));
-
-        mSaverView = findViewById(R.id.main_clock);
+        mSaverView = findViewById(R.id.clock_wrapper);
         mSaverView.setAlpha(0);
         mContentView = (View) mSaverView.getParent();
+
+        FuzzyPrefs prefs = new FuzzyPrefs(this);
+        switch (prefs.style) {
+            case FuzzyPrefs.STYLE_STAGGERED:
+                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_staggered, (LinearLayout)mSaverView, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_staggered);
+                break;
+            case FuzzyPrefs.STYLE_VERTICAL:
+                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_vertical, (LinearLayout)mSaverView, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_vertical);
+                break;
+            case FuzzyPrefs.STYLE_HORIZONTAL:
+            default:
+                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_horizontal, (LinearLayout)mSaverView, true);
+                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_horizontal);
+                break;
+        }
+
+        mFuzzyClock.registerCallback(mListener);
+        mFuzzyClock.loadPreferences(prefs);
+
         mMoveSaverRunnable.registerViews(mContentView, mSaverView);
     }
 
-    final FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
+    final IFuzzyClockView.TimeChangedListener mListener = new IFuzzyClockView.TimeChangedListener() {
         @DebugLog
         @Override
         public void onTimeChanged() {

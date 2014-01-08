@@ -27,9 +27,9 @@
         android:layout_height="wrap_content"
         android:ellipsize="none"
         android:singleLine="true"
-        style="@style/fuzzy_regular"
         android:layout_above="@+id/timeDisplaySeparator"
-        android:layout_toLeftOf="@+id/dummy" />
+        android:layout_toLeftOf="@+id/dummy"
+        style="@style/fuzzy_condensed" />
 
     <TextView
         android:id="@+id/timeDisplaySeparator"
@@ -37,9 +37,9 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:ellipsize="none"
-        style="@style/fuzzy_regular"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        style="@style/fuzzy_condensed" />
 
     <TextView
         android:id="@+id/timeDisplayHours"
@@ -47,9 +47,9 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:ellipsize="none"
-        style="@style/fuzzy_regular"
         android:layout_below="@+id/timeDisplaySeparator"
-        android:layout_toRightOf="@+id/dummy" />
+        android:layout_toRightOf="@+id/dummy"
+        style="@style/fuzzy_condensed" />
 
     <TextView
         android:id="@+id/dummy"

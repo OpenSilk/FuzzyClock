@@ -32,7 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
-            android:layout_column="0" />
+            android:layout_column="0"
+            style="@style/fuzzy_condensed" />
     </TableRow>
 
     <TableRow
@@ -45,14 +46,16 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|center_vertical"
             android:id="@+id/timeDisplaySeparator1"
-            android:layout_column="0" />
+            android:layout_column="0"
+            style="@style/fuzzy_condensed" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
             android:id="@+id/timeDisplaySeparator2"
-            android:layout_column="1" />
+            android:layout_column="1"
+            style="@style/fuzzy_condensed" />
     </TableRow>
 
     <TableRow
@@ -64,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start|top"
             android:id="@+id/timeDisplayHours"
-            android:layout_column="1" />
+            android:layout_column="1"
+            style="@style/fuzzy_condensed" />
     </TableRow>
 </org.opensilk.fuzzyclock.FuzzyClockViewStaggered>

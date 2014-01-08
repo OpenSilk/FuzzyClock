@@ -33,4 +33,9 @@
         <item name="android:fontFamily">sans-serif</item>
     </style>
 
+    <style name="fuzzy_condensed">
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+    </style>
+
 </resources>

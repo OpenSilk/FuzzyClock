@@ -56,11 +56,9 @@ public class FuzzyWidgetSettings extends FuzzySettings {
         if (v == mButtonDone) {
             mFuzzyPrefs.save();
             // Force refresh;
-            startService(new Intent(this, FuzzyWidgetService.class));
+            startService(new Intent("not_null", null, this, FuzzyWidgetService.class));
             setResult(RESULT_OK, mResult);
-            finish();
-        } else {
-            super.onClick(v);
         }
+        super.onClick(v);
     }
 }

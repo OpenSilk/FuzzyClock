@@ -21,19 +21,23 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import hugo.weaving.DebugLog;
 
 public class FuzzyWidget extends AppWidgetProvider {
 
-    private static final String TAG = FuzzyWidget.class.getSimpleName();
-    private static final boolean LOGV = true;
-
     @DebugLog
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         pokeService(context);
+    }
+
+    @DebugLog
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+        //pokeService(context);
     }
 
     @DebugLog
@@ -52,6 +56,6 @@ public class FuzzyWidget extends AppWidgetProvider {
 
     @DebugLog
     private void pokeService(Context context) {
-        context.startService(new Intent(context, FuzzyWidgetService.class));
+        context.startService(new Intent("not_null", null, context, FuzzyWidgetService.class));
     }
 }

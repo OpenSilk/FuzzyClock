@@ -29,7 +29,7 @@ import hugo.weaving.DebugLog;
 public class FuzzyDreams extends DreamService {
 
     private static final String TAG = FuzzyDreams.class.getSimpleName();
-    private static final boolean LOGV = true;
+    private static final boolean LOGV = BuildConfig.DEBUG;
 
     private View mContentView, mSaverView;
     private IFuzzyClockView mFuzzyClock;

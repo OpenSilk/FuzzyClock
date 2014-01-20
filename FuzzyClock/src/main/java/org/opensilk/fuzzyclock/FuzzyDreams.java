@@ -17,7 +17,9 @@
  */
 package org.opensilk.fuzzyclock;
 
+import android.annotation.TargetApi;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Handler;
 import android.service.dreams.DreamService;
 import android.util.Log;
@@ -26,13 +28,14 @@ import android.widget.LinearLayout;
 
 import hugo.weaving.DebugLog;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class FuzzyDreams extends DreamService {
 
     private static final String TAG = FuzzyDreams.class.getSimpleName();
     private static final boolean LOGV = BuildConfig.DEBUG;
 
     private View mContentView, mSaverView;
-    private IFuzzyClockView mFuzzyClock;
+    private FuzzyClockView mFuzzyClock;
 
     private final Handler mHandler = new Handler();
 
@@ -84,30 +87,17 @@ public class FuzzyDreams extends DreamService {
         mSaverView.setAlpha(0);
         mContentView = (View) mSaverView.getParent();
 
-        FuzzyPrefs prefs = new FuzzyPrefs(this);
-        switch (prefs.style) {
-            case FuzzyPrefs.STYLE_STAGGERED:
-                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_staggered, (LinearLayout)mSaverView, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_staggered);
-                break;
-            case FuzzyPrefs.STYLE_VERTICAL:
-                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_vertical, (LinearLayout)mSaverView, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_vertical);
-                break;
-            case FuzzyPrefs.STYLE_HORIZONTAL:
-            default:
-                getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock_horizontal, (LinearLayout)mSaverView, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_horizontal);
-                break;
-        }
+        //Todo embed in xml
+        getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock, (LinearLayout)mSaverView, true);
+        mFuzzyClock = (FuzzyClockView) findViewById(R.id.fuzzy_clock);
 
         mFuzzyClock.registerCallback(mListener);
-        mFuzzyClock.loadPreferences(prefs);
+        mFuzzyClock.loadPreferences(new FuzzyPrefs(this));
 
         mMoveSaverRunnable.registerViews(mContentView, mSaverView);
     }
 
-    final IFuzzyClockView.TimeChangedListener mListener = new IFuzzyClockView.TimeChangedListener() {
+    final FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
         @DebugLog
         @Override
         public void onTimeChanged() {

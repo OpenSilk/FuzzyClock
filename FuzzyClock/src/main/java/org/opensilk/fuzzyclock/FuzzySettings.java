@@ -44,7 +44,7 @@ abstract class FuzzySettings extends Activity implements
 
     protected FuzzyPrefs mFuzzyPrefs;
 
-    protected IFuzzyClockView mFuzzyClock;
+    protected FuzzyClockView mFuzzyClock;
     protected View mMinutes, mHours, mSeparator;
     protected Button mButtonDone, mButtonReset;
 
@@ -73,6 +73,11 @@ abstract class FuzzySettings extends Activity implements
         setContentView(R.layout.fuzzy_settings_base);
         mRoot = (FrameLayout) findViewById(R.id.base);
         mRoot.addView(getLayoutInflater().inflate(R.layout.fuzzy_settings, mRoot, false));
+
+        //todo embed in xml
+        LinearLayout wrapper = (LinearLayout) findViewById(R.id.clock_wrapper);
+        getLayoutInflater().inflate(R.layout.fuzzy_clock, wrapper, true);
+        mFuzzyClock = (FuzzyClockView) findViewById(R.id.fuzzy_clock);
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mFirstRun = prefs.getBoolean("first_run", true);
@@ -127,6 +132,7 @@ abstract class FuzzySettings extends Activity implements
         super.onResume();
         getActionBar().setSelectedNavigationItem(mFuzzyPrefs.style);
         mPicker.setValue((int) mFuzzyPrefs.size);
+        initFuzzyClockViews();
     }
 
     @DebugLog
@@ -174,24 +180,7 @@ abstract class FuzzySettings extends Activity implements
     @Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         mFuzzyPrefs.style = itemPosition;
-        LinearLayout wrapper = (LinearLayout) findViewById(R.id.clock_wrapper);
-        wrapper.removeAllViews();
-        switch (itemPosition) {
-            case FuzzyPrefs.STYLE_STAGGERED:
-                getLayoutInflater().inflate(R.layout.fuzzy_clock_staggered, wrapper, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_staggered);
-                break;
-            case FuzzyPrefs.STYLE_VERTICAL:
-                getLayoutInflater().inflate(R.layout.fuzzy_clock_vertical, wrapper, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_vertical);
-                break;
-            case FuzzyPrefs.STYLE_HORIZONTAL:
-            default:
-                getLayoutInflater().inflate(R.layout.fuzzy_clock_horizontal, wrapper, true);
-                mFuzzyClock = (IFuzzyClockView) findViewById(R.id.fuzzy_clock_horizontal);
-                break;
-        }
-        initFuzzyClockViews();
+        mFuzzyClock.setClockStyle(mFuzzyPrefs.style);
         return true;
     }
 

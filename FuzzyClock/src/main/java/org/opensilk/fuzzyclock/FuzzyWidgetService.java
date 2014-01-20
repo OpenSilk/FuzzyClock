@@ -28,12 +28,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
+import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 
 import java.util.Calendar;
@@ -41,8 +43,6 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import hugo.weaving.DebugLog;
-
-import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class FuzzyWidgetService extends Service {
 
@@ -54,6 +54,7 @@ public class FuzzyWidgetService extends Service {
 
     private PendingIntent mRestartIntent;
     private AlarmManager mAlarmManager;
+    private LayoutInflater mLayoutInflater;
 
     private AppWidgetManager mWidgetManager;
     private String mTimeZoneId;
@@ -125,6 +126,7 @@ public class FuzzyWidgetService extends Service {
                 new Intent(mContext, FuzzyWidgetService.class),
                 PendingIntent.FLAG_CANCEL_CURRENT);
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        mLayoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @DebugLog
@@ -168,18 +170,10 @@ public class FuzzyWidgetService extends Service {
 
         mFuzzyLogic.updateTime();
 
-        FuzzyLogic.FuzzyTime time = mFuzzyLogic.getFuzzyTime();
-        CharSequence timeM = (time.minute != -1) ? getResources().getString(time.minute) : "";
-        CharSequence timeH = (time.hour != -1) ? getResources().getString(time.hour) : "";
-        CharSequence separator = (time.separator != -1) ? getResources().getString(time.separator) : "";
-
-        final StringBuilder fullTimeStr = new StringBuilder();
-        fullTimeStr.append(timeM);
-        fullTimeStr.append(separator);
-        fullTimeStr.append(timeH);
+        FuzzyClockView fuzzyClock = (FuzzyClockView) mLayoutInflater.inflate(R.layout.fuzzy_clock, null);
+        fuzzyClock.updateTime();
 
         int[] widgetIds = mWidgetManager.getAppWidgetIds(new ComponentName(mContext, FuzzyWidget.class));
-
         if (widgetIds != null && widgetIds.length > 0) {
             for (int id: widgetIds) {
                 FuzzyPrefs settings = mWidgetSettings.get((Integer) id);
@@ -187,44 +181,18 @@ public class FuzzyWidgetService extends Service {
                     continue; // Once setup is done we will be called again.
                 }
                 if (LOGV) Log.v(TAG, "Updating widget view id=" + id + " " + settings.toString());
-                RemoteViews views;
-                switch (settings.style) {
-                    case FuzzyPrefs.STYLE_STAGGERED:
-                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_staggered);
-                        break;
-                    case FuzzyPrefs.STYLE_VERTICAL:
-                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_vertical);
-                        break;
-                    case FuzzyPrefs.STYLE_HORIZONTAL:
-                    default:
-                        views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget_horizontal);
-                        break;
-                }
-                if (time.minute == -1) {
-                    views.setViewVisibility(R.id.timeDisplayMinutes, View.GONE);
-                } else {
-                    views.setTextViewText(R.id.timeDisplayMinutes, timeM);
-                    views.setTextColor(R.id.timeDisplayMinutes, getResources().getColor(settings.color.minute));
-                    views.setTextViewTextSize(R.id.timeDisplayMinutes, COMPLEX_UNIT_SP, settings.size);
-                    views.setViewVisibility(R.id.timeDisplayMinutes, View.VISIBLE);
-                }
-                if (time.separator == -1) {
-                    views.setViewVisibility(R.id.timeDisplaySeparator, View.GONE);
-                } else {
-                    views.setTextViewText(R.id.timeDisplaySeparator, separator);
-                    views.setTextColor(R.id.timeDisplaySeparator, getResources().getColor(settings.color.separator));
-                    views.setTextViewTextSize(R.id.timeDisplaySeparator, COMPLEX_UNIT_SP, settings.size);
-                    views.setViewVisibility(R.id.timeDisplaySeparator, View.VISIBLE);
-                }
-                if (time.hour == -1) {
-                    views.setViewVisibility(R.id.timeDisplayHours, View.GONE);
-                } else {
-                    views.setTextViewText(R.id.timeDisplayHours, timeH);
-                    views.setTextColor(R.id.timeDisplayHours, getResources().getColor(settings.color.hour));
-                    views.setTextViewTextSize(R.id.timeDisplayHours, COMPLEX_UNIT_SP, settings.size);
-                    views.setViewVisibility(R.id.timeDisplayHours, View.VISIBLE);
-                }
-                views.setContentDescription(R.id.fuzzy_clock, fullTimeStr);
+                fuzzyClock.loadPreferences(settings);
+                // Where the magic happens... w & h are 0 without this
+                fuzzyClock.measure(0, 0);
+                fuzzyClock.layout(0, 0, fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight());
+                // Draw view into a bitmap
+                Bitmap bitmap = Bitmap.createBitmap(fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+                Canvas c = new Canvas(bitmap);
+                fuzzyClock.draw(c);
+                // send bitmap to remote view
+                RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget);
+                views.setImageViewBitmap(R.id.fuzzy_clock_image, bitmap);
+                views.setContentDescription(R.id.fuzzy_clock_image, fuzzyClock.getContentDescription());
                 mWidgetManager.updateAppWidget(id, views);
             }
             scheduleUpdate();

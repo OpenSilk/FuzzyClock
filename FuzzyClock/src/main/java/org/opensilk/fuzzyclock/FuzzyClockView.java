@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 OpenSilk Productions LLC
+ *  Copyright (C) 2013,2014 OpenSilk Productions LLC
  *
  *  This file is part of Fuzzy Clock
  *
@@ -25,7 +25,8 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -35,7 +36,7 @@ import hugo.weaving.DebugLog;
 
 import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
-public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyClockView {
+public class FuzzyClockView extends ViewGroup {
 
     private FuzzyLogic mFuzzyLogic = new FuzzyLogic();
     protected TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
@@ -48,8 +49,13 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
     private int mHourColorRes = android.R.color.white;
     private int mSeparatorColorRes = android.R.color.holo_blue_light;
     private float mFontSize;
+    private int mClockStyle = FuzzyPrefs.STYLE_DEFAULT;
 
     private TimeChangedListener mCallback;
+
+    public interface TimeChangedListener {
+        public void onTimeChanged();
+    }
 
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
@@ -89,12 +95,16 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
         }
     }
 
-    public FuzzyClockViewHorizontal(Context context) {
+    public FuzzyClockView(Context context) {
         this(context, null);
     }
 
-    public FuzzyClockViewHorizontal(Context context, AttributeSet attrs) {
+    public FuzzyClockView(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    public FuzzyClockView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
     }
 
     @Override
@@ -105,6 +115,113 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
         mFuzzyLogic.setCalendar(Calendar.getInstance());
         setDateFormat();
+    }
+
+    @DebugLog
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int maxHeight = 0;
+        int maxWidth = 0;
+
+        // Find out how big everyone wants to be
+        measureChildren(widthMeasureSpec, heightMeasureSpec);
+
+        switch (mClockStyle) {
+            case FuzzyPrefs.STYLE_STAGGERED:
+                // minutes + hours
+                maxWidth = getChildWidth(mTimeDisplayMinutes) + getChildWidth(mTimeDisplayHours);
+                // minutes + separator + hours
+                maxHeight = getChildHeight(mTimeDisplayMinutes) + getChildHeight(mTimeDisplaySeparator) + getChildHeight(mTimeDisplayHours);
+                break;
+            case FuzzyPrefs.STYLE_VERTICAL:
+                // largest of minutes, separator, hours
+                maxWidth = Math.max(Math.max(getChildWidth(mTimeDisplayMinutes), getChildWidth(mTimeDisplaySeparator)), getChildWidth(mTimeDisplayHours));
+                // minutes + separator + hours
+                maxHeight = getChildHeight(mTimeDisplayMinutes) + getChildHeight(mTimeDisplaySeparator) + getChildHeight(mTimeDisplayHours);
+                break;
+            case FuzzyPrefs.STYLE_HORIZONTAL:
+            default:
+                // minutes + separator + hours
+                maxWidth = getChildWidth(mTimeDisplayMinutes) + getChildWidth(mTimeDisplaySeparator) + getChildWidth(mTimeDisplayHours);
+                // largest of minutes, separator, hours
+                maxHeight = Math.max(Math.max(getChildHeight(mTimeDisplayMinutes), getChildHeight(mTimeDisplaySeparator)), getChildHeight(mTimeDisplayHours));
+                break;
+        }
+
+        // Account for padding too
+        maxWidth += getPaddingLeft() + getPaddingRight();
+        maxHeight += getPaddingTop() + getPaddingBottom();
+
+        // Check against minimum height and width
+        maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
+        maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
+
+        setMeasuredDimension(resolveSizeAndState(maxWidth, widthMeasureSpec, 0),
+                resolveSizeAndState(maxHeight, heightMeasureSpec, 0));
+    }
+
+    @DebugLog
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        int mX, mY, sX, sY, hX, hY;
+        mX = sX = hX = getPaddingLeft();
+        mY = sY = hY = getPaddingTop();
+        switch (mClockStyle) {
+            case FuzzyPrefs.STYLE_STAGGERED:
+                // left
+                mX += 0;
+                // top
+                mY += 0;
+
+                // end of minutes - half length of self
+                sX += getChildWidth(mTimeDisplayMinutes) - getChildWidth(mTimeDisplaySeparator) / 2;
+                // minutes + height of minutes
+                sY += mY + getChildHeight(mTimeDisplayMinutes);
+
+                // end of minutes
+                hX += getChildWidth(mTimeDisplayMinutes);
+                // separator + height of separator
+                hY += sY + getChildHeight(mTimeDisplaySeparator);
+                break;
+            case FuzzyPrefs.STYLE_VERTICAL:
+                // centered
+                mX += getMeasuredWidth() / 2 - getChildWidth(mTimeDisplayMinutes) / 2;
+                // top
+                mY += 0;
+
+                // centered
+                sX += getMeasuredWidth() / 2 - getChildWidth(mTimeDisplaySeparator) / 2;
+                // minutes + height of minutes
+                sY += mY + getChildHeight(mTimeDisplayMinutes);
+
+                // centered
+                hX += getMeasuredWidth() / 2 - getChildWidth(mTimeDisplayHours) / 2;
+                // separator + height of separator;
+                hY += sY + getChildHeight(mTimeDisplaySeparator);
+                break;
+            case FuzzyPrefs.STYLE_HORIZONTAL:
+            default:
+                // left
+                mX += 0;
+                // top
+                mY += 0;
+
+                // end of minutes
+                sX += getChildWidth(mTimeDisplayMinutes);
+                // top
+                sY += 0;
+
+                // end of minutes + separator
+                hX += sX + getChildWidth(mTimeDisplaySeparator);
+                // top
+                hY += 0;
+                break;
+        }
+        mTimeDisplayMinutes.layout(mX, mY, mX + getChildWidth(mTimeDisplayMinutes), mY + getChildHeight(mTimeDisplayMinutes));
+        mTimeDisplaySeparator.layout(sX, sY, sX + getChildWidth(mTimeDisplaySeparator), sY + getChildHeight(mTimeDisplaySeparator));
+        mTimeDisplayHours.layout(hX, hY, hX + getChildWidth(mTimeDisplayHours), hY + getChildHeight(mTimeDisplayHours));
     }
 
     @Override
@@ -173,7 +290,7 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
     }
 
     @DebugLog
-    private void updateTime() {
+    public void updateTime() {
         updateLogic();
 
         FuzzyLogic.FuzzyTime time = mFuzzyLogic.getFuzzyTime();
@@ -238,6 +355,19 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
         mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, mFontSize);
         mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, mFontSize);
+        updateTextViewPadding();
+    }
+
+    private void updateTextViewPadding() {
+        float topPaddingRatio = 0.25f;// 0.328f;
+        float bottomPaddingRatio = 0.18f;// 0.25f;
+        // Set negative padding to scrunch the lines closer together.
+        mTimeDisplayMinutes.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayMinutes.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplayMinutes.getTextSize()));
+        mTimeDisplaySeparator.setPadding(0, (int) (-topPaddingRatio * mTimeDisplaySeparator.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplaySeparator.getTextSize()));
+        mTimeDisplayHours.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayHours.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplayHours.getTextSize()));
     }
 
     public void setFontSize(float size) {
@@ -245,13 +375,34 @@ public class FuzzyClockViewHorizontal extends LinearLayout implements IFuzzyCloc
         updateSize();
     }
 
+    public void setClockStyle(int style) {
+        mClockStyle = style;
+        requestLayout();
+    }
+
     public void loadPreferences(FuzzyPrefs prefs) {
         mMinuteColorRes = prefs.color.minute;
         mHourColorRes = prefs.color.hour;
         mSeparatorColorRes = prefs.color.separator;
         mFontSize = prefs.size;
+        mClockStyle = prefs.style;
         updateColors();
         updateSize();
+        requestLayout();
+    }
+
+    private int getChildWidth(final View v) {
+        if (v != null && v.getVisibility() != GONE) {
+            return v.getMeasuredWidth();
+        }
+        return 0;
+    }
+
+    private int getChildHeight(final View v) {
+        if (v != null && v.getVisibility() != GONE) {
+            return v.getMeasuredHeight();
+        }
+        return 0;
     }
 
     private void setDateFormat() {

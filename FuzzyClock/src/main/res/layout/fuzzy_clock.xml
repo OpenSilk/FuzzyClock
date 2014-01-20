@@ -16,15 +16,32 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<org.opensilk.fuzzyclock.FuzzyClockViewHorizontal
+<org.opensilk.fuzzyclock.FuzzyClockView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fuzzy_clock_horizontal"
-    android:orientation="horizontal"
-    android:gravity="center"
-    android:layout_gravity="center"
+    android:id="@+id/fuzzy_clock"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <include layout="@layout/fuzzy_clock_linear_base"/>
+    <TextView
+        android:id="@+id/timeDisplayMinutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="none"
+        android:singleLine="true"
+        style="@style/fuzzy_condensed"/>
+    <TextView
+        android:id="@+id/timeDisplaySeparator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="none"
+        style="@style/fuzzy_condensed"/>
+    <TextView
+        android:id="@+id/timeDisplayHours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="none"
+        style="@style/fuzzy_condensed"/>
 
-</org.opensilk.fuzzyclock.FuzzyClockViewHorizontal>
+</org.opensilk.fuzzyclock.FuzzyClockView>

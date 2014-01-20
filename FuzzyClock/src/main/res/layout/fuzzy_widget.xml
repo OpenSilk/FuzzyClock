@@ -16,15 +16,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<org.opensilk.fuzzyclock.FuzzyClockViewVertical
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fuzzy_clock_vertical"
+    android:id="@+id/fuzzy_widget"
     android:orientation="vertical"
     android:gravity="center"
-    android:layout_gravity="center"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
 
-    <include layout="@layout/fuzzy_clock_linear_base"/>
+    <ImageView
+        android:id="@+id/fuzzy_clock_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-</org.opensilk.fuzzyclock.FuzzyClockViewVertical>
+</LinearLayout>

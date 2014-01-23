@@ -191,8 +191,14 @@ public class FuzzyWidgetService extends Service {
                 fuzzyClock.draw(c);
                 // send bitmap to remote view
                 RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget);
+                Intent intent = new Intent(mContext, FuzzyWidgetSettings.class);
+                intent.setAction(String.format("dummy_%d", id));
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+                PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
                 views.setImageViewBitmap(R.id.fuzzy_clock_image, bitmap);
                 views.setContentDescription(R.id.fuzzy_clock_image, fuzzyClock.getContentDescription());
+                views.setOnClickPendingIntent(R.id.fuzzy_clock_image, pi);
                 mWidgetManager.updateAppWidget(id, views);
             }
             scheduleUpdate();

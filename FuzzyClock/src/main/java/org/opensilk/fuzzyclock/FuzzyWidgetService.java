@@ -185,6 +185,10 @@ public class FuzzyWidgetService extends Service {
                 // Where the magic happens... w & h are 0 without this
                 fuzzyClock.measure(0, 0);
                 fuzzyClock.layout(0, 0, fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight());
+                if (fuzzyClock.getMeasuredWidth() == 0 || fuzzyClock.getMeasuredHeight() == 0) {
+                    Log.e(TAG, "WARN: w or h was zero! skipping draw");
+                    continue;
+                }
                 // Draw view into a bitmap
                 Bitmap bitmap = Bitmap.createBitmap(fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bitmap);

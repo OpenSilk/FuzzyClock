@@ -168,9 +168,10 @@ public class FuzzyLogicWarped extends FuzzyLogic {
         // Final shuffle
         if (minutes >= 56 || minutes < 5) {
             if (hours == 0 || hours == 12) {
-                // Separator show noon/midnight
-                separator = timeH;
-                timeH = timeM = -1;
+                // minutes show noon/midnight
+                timeM = timeH;
+                timeH = -1;
+                separator = -1;
             } else {
                 // put hour in minutes place
                 timeM = timeH;

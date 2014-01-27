@@ -33,14 +33,12 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.TimeZone;
+import java.util.Locale;
 
 import hugo.weaving.DebugLog;
 
@@ -51,28 +49,17 @@ public class FuzzyWidgetService extends Service {
 
     private Context mContext;
     private FormatChangeObserver mFormatChangeObserver;
-
-    private PendingIntent mRestartIntent;
     private AlarmManager mAlarmManager;
-    private LayoutInflater mLayoutInflater;
-
+    private FuzzyClockView mFuzzyClock;
     private AppWidgetManager mWidgetManager;
-    private String mTimeZoneId;
-
-    private int startCount;
-
-    private final FuzzyLogic mFuzzyLogic = new FuzzyLogicWarped();
-    private final HashMap<Integer, FuzzyPrefs> mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
+    private HashMap<Integer, FuzzyPrefs> mWidgetSettings;
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @DebugLog
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
-                mFuzzyLogic.setCalendar(Calendar.getInstance());
-            }
-            mHandler.post(mUpdateTimeRunnable);
+            mHandler.post(mUpdateWidgetsRunnable);
         }
     };
 
@@ -83,10 +70,10 @@ public class FuzzyWidgetService extends Service {
         }
     };
 
-    private final Runnable mUpdateTimeRunnable = new Runnable() {
+    private final Runnable mUpdateWidgetsRunnable = new Runnable() {
         @Override
         public void run() {
-            updateTime();
+            updateWidgets();
         }
     };
 
@@ -96,8 +83,7 @@ public class FuzzyWidgetService extends Service {
         }
         @Override
         public void onChange(boolean selfChange) {
-            setDateFormat();
-            mHandler.post(mUpdateTimeRunnable);
+            mHandler.post(mUpdateWidgetsRunnable);
         }
     }
 
@@ -105,9 +91,8 @@ public class FuzzyWidgetService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startCount = 0;
         mContext = this;
-        mFuzzyLogic.setCalendar(Calendar.getInstance());
+
 
         /* monitor time ticks, time changed, timezone */
         IntentFilter filter = new IntentFilter();
@@ -115,27 +100,44 @@ public class FuzzyWidgetService extends Service {
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         mContext.registerReceiver(mIntentReceiver, filter);
 
-        mFormatChangeObserver = new FormatChangeObserver();
-        mContext.getContentResolver().registerContentObserver(
-                Settings.System.CONTENT_URI, true, mFormatChangeObserver
-        );
-        setDateFormat();
+        //mFormatChangeObserver = new FormatChangeObserver();
+        //mContext.getContentResolver().registerContentObserver(
+        //        Settings.System.CONTENT_URI, true, mFormatChangeObserver
+        //);
 
+        mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
         mWidgetManager = AppWidgetManager.getInstance(mContext);
-        mRestartIntent = PendingIntent.getService(mContext, 0,
-                new Intent(mContext, FuzzyWidgetService.class),
-                PendingIntent.FLAG_CANCEL_CURRENT);
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        mLayoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mFuzzyClock = (FuzzyClockView) layoutInflater.inflate(R.layout.fuzzy_clock, null);
     }
 
     @DebugLog
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (startCount++ == 0 || intent.getAction() != null) {
+        if (intent.getAction() == null) {
             mHandler.post(mUpdateSettingsRunnable);
+            mHandler.post(mUpdateWidgetsRunnable);
+        } else if (intent.getAction().startsWith("scheduled_update")) {
+            final int id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            if (!mWidgetSettings.containsKey((Integer) id)) {
+                mHandler.post(mUpdateSettingsRunnable);
+            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateWidget(id);
+                }
+            });
+        } else if (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_DELETED)) {
+            int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            if (ids != null) {
+                for (int id: ids) {
+                    cancelUpdate(id);
+                }
+            }
         }
-        mHandler.post(mUpdateTimeRunnable);
         return START_STICKY;
     }
 
@@ -148,7 +150,7 @@ public class FuzzyWidgetService extends Service {
     @Override
     public void onDestroy() {
         mContext.unregisterReceiver(mIntentReceiver);
-        mContext.getContentResolver().unregisterContentObserver(mFormatChangeObserver);
+        //mContext.getContentResolver().unregisterContentObserver(mFormatChangeObserver);
         super.onDestroy();
     }
 
@@ -157,76 +159,82 @@ public class FuzzyWidgetService extends Service {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mHandler.post(mUpdateSettingsRunnable);
-        mHandler.post(mUpdateTimeRunnable);
+        mHandler.post(mUpdateWidgetsRunnable);
     }
 
     @DebugLog
-    private void updateTime() {
-        mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
-
-        if (mTimeZoneId != null) {
-            mFuzzyLogic.getCalendar().setTimeZone(TimeZone.getTimeZone(mTimeZoneId));
-        }
-
-        mFuzzyLogic.updateTime();
-
-        FuzzyClockView fuzzyClock = (FuzzyClockView) mLayoutInflater.inflate(R.layout.fuzzy_clock, null);
-        fuzzyClock.updateTime();
-
+    private void updateWidgets() {
         int[] widgetIds = mWidgetManager.getAppWidgetIds(new ComponentName(mContext, FuzzyWidget.class));
         if (widgetIds != null && widgetIds.length > 0) {
             for (int id: widgetIds) {
-                FuzzyPrefs settings = mWidgetSettings.get((Integer) id);
-                if (settings == null) {
-                    continue; // Once setup is done we will be called again.
-                }
-                if (LOGV) Log.v(TAG, "Updating widget view id=" + id + " " + settings.toString());
-                fuzzyClock.loadPreferences(settings);
-                // Where the magic happens... w & h are 0 without this
-                fuzzyClock.measure(0, 0);
-                fuzzyClock.layout(0, 0, fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight());
-                if (fuzzyClock.getMeasuredWidth() == 0 || fuzzyClock.getMeasuredHeight() == 0) {
-                    Log.e(TAG, "WARN: w or h was zero! skipping draw");
-                    continue;
-                }
-                // Draw view into a bitmap
-                Bitmap bitmap = Bitmap.createBitmap(fuzzyClock.getMeasuredWidth(), fuzzyClock.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-                Canvas c = new Canvas(bitmap);
-                fuzzyClock.draw(c);
-                // send bitmap to remote view
-                RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget);
-                Intent intent = new Intent(mContext, FuzzyWidgetSettings.class);
-                intent.setAction(String.format("dummy_%d", id));
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
-                PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                views.setImageViewBitmap(R.id.fuzzy_clock_image, bitmap);
-                views.setContentDescription(R.id.fuzzy_clock_image, fuzzyClock.getContentDescription());
-                views.setOnClickPendingIntent(R.id.fuzzy_clock_image, pi);
-                mWidgetManager.updateAppWidget(id, views);
+                 updateWidget(id);
             }
-            scheduleUpdate();
         } else {
             Log.i(TAG, "No widgets left to update...");
-            cancelUpdate();
             stopSelf();
         }
     }
 
-    private void scheduleUpdate() {
-        cancelUpdate();
-        long now = mFuzzyLogic.getCalendar().getTimeInMillis();
-        long nextMilli = mFuzzyLogic.getNextIntervalMilli();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mAlarmManager.setExact(AlarmManager.RTC, now+nextMilli, mRestartIntent);
-        } else {
-            mAlarmManager.set(AlarmManager.RTC, now+nextMilli, mRestartIntent);
+    @DebugLog
+    private void updateWidget(int id) {
+        FuzzyPrefs settings = mWidgetSettings.get((Integer) id);
+        if (settings == null) {
+            return; // Once setup is done we will be called again.
         }
-        if (LOGV) Log.i(TAG, "Scheduled clock update for " + (nextMilli/1000) + "s from now");
+        if (LOGV) Log.v(TAG, "Updating widget id=" + id + " " + settings.toString());
+        mFuzzyClock.loadPreferences(settings);
+        mFuzzyClock.setDateFormat();
+        mFuzzyClock.updateTime();
+        // Where the magic happens... w & h are 0 without this
+        mFuzzyClock.measure(0, 0);
+        mFuzzyClock.layout(0, 0, mFuzzyClock.getMeasuredWidth(), mFuzzyClock.getMeasuredHeight());
+        if (mFuzzyClock.getMeasuredWidth() == 0 || mFuzzyClock.getMeasuredHeight() == 0) {
+            return;
+        }
+        // Draw view into a bitmap
+        Bitmap bitmap = Bitmap.createBitmap(mFuzzyClock.getMeasuredWidth(), mFuzzyClock.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bitmap);
+        mFuzzyClock.draw(c);
+        // build onClick intent
+        Intent intent = new Intent(mContext, FuzzyWidgetSettings.class);
+        intent.setAction(String.format(Locale.US, "dummy_%d", id));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+        PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        // send bitmap to remote view
+        RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.fuzzy_widget);
+        views.setImageViewBitmap(R.id.fuzzy_clock_image, bitmap);
+        views.setContentDescription(R.id.fuzzy_clock_image, mFuzzyClock.getContentDescription());
+        views.setOnClickPendingIntent(R.id.fuzzy_clock_image, pi);
+        mWidgetManager.updateAppWidget(id, views);
+        scheduleUpdate(mFuzzyClock.getLogic().getCalendar().getTimeInMillis(), mFuzzyClock.getLogic().getNextIntervalMilli(), id);
     }
 
-    private void cancelUpdate() {
-        mAlarmManager.cancel(mRestartIntent);
+    @DebugLog
+    private void scheduleUpdate(long now, long nextMilli, int id) {
+        PendingIntent pendingIntent = createPendingIntent(id);
+        cancelUpdate(pendingIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mAlarmManager.setExact(AlarmManager.RTC, now+nextMilli, pendingIntent);
+        } else {
+            mAlarmManager.set(AlarmManager.RTC, now+nextMilli, pendingIntent);
+        }
+        if (LOGV) Log.i(TAG, "Scheduled update for " +
+                (nextMilli/1000) + "s from now for widget " + id);
+    }
+
+    private void cancelUpdate(int id) {
+        cancelUpdate(createPendingIntent(id));
+    }
+
+    private void cancelUpdate(PendingIntent pendingIntent) {
+        mAlarmManager.cancel(pendingIntent);
+    }
+
+    private PendingIntent createPendingIntent(int id) {
+        Intent i = new Intent(String.format(Locale.US, "scheduled_update_%d", id),
+                null, mContext, FuzzyWidgetService.class);
+        i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+        return PendingIntent.getService(mContext, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @DebugLog
@@ -238,15 +246,6 @@ public class FuzzyWidgetService extends Service {
                 mWidgetSettings.put((Integer) id, new FuzzyPrefs(mContext, id));
             }
         }
-    }
-
-    private void setDateFormat() {
-        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(mContext));
-    }
-
-    public void setTimeZone(String id) {
-        mTimeZoneId = id;
-        updateTime();
     }
 
 }

@@ -107,6 +107,7 @@ public class FuzzyClockView extends ViewGroup {
         super(context, attrs, defStyle);
     }
 
+    @DebugLog
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -224,6 +225,7 @@ public class FuzzyClockView extends ViewGroup {
         mTimeDisplayHours.layout(hX, hY, hX + getChildWidth(mTimeDisplayHours), hY + getChildHeight(mTimeDisplayHours));
     }
 
+    @DebugLog
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -247,6 +249,7 @@ public class FuzzyClockView extends ViewGroup {
         updateTime();
     }
 
+    @DebugLog
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -380,6 +383,14 @@ public class FuzzyClockView extends ViewGroup {
         requestLayout();
     }
 
+    public FuzzyLogic getLogic() {
+        return mFuzzyLogic;
+    }
+
+    public void setLogic(FuzzyLogic logic) {
+        mFuzzyLogic = logic;
+    }
+
     public void loadPreferences(FuzzyPrefs prefs) {
         mMinuteColorRes = prefs.color.minute;
         mHourColorRes = prefs.color.hour;
@@ -405,7 +416,7 @@ public class FuzzyClockView extends ViewGroup {
         return 0;
     }
 
-    private void setDateFormat() {
+    public void setDateFormat() {
         mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
     }
 

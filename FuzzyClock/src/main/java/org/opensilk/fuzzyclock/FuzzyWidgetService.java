@@ -61,7 +61,7 @@ public class FuzzyWidgetService extends Service {
 
     private int startCount;
 
-    private final FuzzyLogic mFuzzyLogic = new FuzzyLogic();
+    private final FuzzyLogic mFuzzyLogic = new FuzzyLogicWarped();
     private final HashMap<Integer, FuzzyPrefs> mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
     /* called by system on minute ticks */
     private final Handler mHandler = new Handler();

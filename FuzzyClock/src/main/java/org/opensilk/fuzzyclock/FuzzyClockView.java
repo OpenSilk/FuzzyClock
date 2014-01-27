@@ -38,7 +38,7 @@ import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class FuzzyClockView extends ViewGroup {
 
-    private FuzzyLogic mFuzzyLogic = new FuzzyLogic();
+    private FuzzyLogic mFuzzyLogic = new FuzzyLogicWarped();
     protected TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;

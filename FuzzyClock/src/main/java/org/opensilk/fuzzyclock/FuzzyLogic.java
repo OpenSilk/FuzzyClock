@@ -60,6 +60,37 @@ public abstract class FuzzyLogic {
 
     public abstract FuzzyTime getFuzzyTime();
 
+    protected int getHourResourceId(int hour) {
+        switch (hour) {
+            case 0:  return R.string.fuzzy_twelve;
+            case 1:  return R.string.fuzzy_one;
+            case 2:  return R.string.fuzzy_two;
+            case 3:  return R.string.fuzzy_three;
+            case 4:  return R.string.fuzzy_four;
+            case 5:  return R.string.fuzzy_five;
+            case 6:  return R.string.fuzzy_six;
+            case 7:  return R.string.fuzzy_seven;
+            case 8:  return R.string.fuzzy_eight;
+            case 9:  return R.string.fuzzy_nine;
+            case 10: return R.string.fuzzy_ten;
+            case 11: return R.string.fuzzy_eleven;
+            case 12: return R.string.fuzzy_twelve;
+            case 13: return R.string.fuzzy_thirteen;
+            case 14: return R.string.fuzzy_fourteen;
+            case 15: return R.string.fuzzy_fifteen;
+            case 16: return R.string.fuzzy_sixteen;
+            case 17: return R.string.fuzzy_seventeen;
+            case 18: return R.string.fuzzy_eighteen;
+            case 19: return R.string.fuzzy_nineteen;
+            case 20: return R.string.fuzzy_twenty;
+            case 21: return R.string.fuzzy_twenty_one;
+            case 22: return R.string.fuzzy_twenty_two;
+            case 23: return R.string.fuzzy_twenty_three;
+            case 24: return R.string.fuzzy_twenty_four;
+            default: return -1;
+        }
+    }
+
     // int here are resource id's
     public static class FuzzyTime {
         public int minute, hour, separator;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 OpenSilk Productions LLC
+ *  Copyright (C) 2014 OpenSilk Productions LLC
  *
  *  This file is part of Fuzzy Clock
  *
@@ -20,19 +20,11 @@ package org.opensilk.fuzzyclock;
 import java.util.Calendar;
 
 /**
- * The core logic here aims to warp your perception of time.
- *
- * The first half of the hour runs slow and creeps along, behind
- * the actual time. Giving you a few extra minutes complete your task,
- * effectively making you more productive.
- *
- * The second half of the hour races, skipping ahead... into the future.
- * Giving you some extra minutes to commute, getting you out the door
- * and where you need to be on time.
+ * Fuzzy time that runs five minutes slow
  */
-public class FuzzyLogicWarped extends FuzzyLogic {
+public class FuzzyLogicSlow extends FuzzyLogic {
 
-    public FuzzyLogicWarped() {
+    public FuzzyLogicSlow() {
         super();
     }
 
@@ -43,19 +35,18 @@ public class FuzzyLogicWarped extends FuzzyLogic {
 
     private int getMinutesState(int minutes) {
         int minState;
-        if        (minutes >= 56) { minState = 1;
-        } else if (minutes >= 51) { minState = 2;
-        } else if (minutes >= 46) { minState = 3;
-        } else if (minutes >= 41) { minState = 4;
-        } else if (minutes >= 36) { minState = 5;
-        } else if (minutes == 35) { minState = 6;
-        } else if (minutes >= 30) { minState = 7;
-        } else if (minutes >= 25) { minState = 8;
-        } else if (minutes >= 20) { minState = 9;
-        } else if (minutes >= 15) { minState = 10;
-        } else if (minutes >= 10) { minState = 11;
-        } else if (minutes >= 5)  { minState = 12;
-        } else                    { minState = 1;
+        if        (minutes < 5)  { minState = 1;
+        } else if (minutes < 10) { minState = 2;
+        } else if (minutes < 15) { minState = 3;
+        } else if (minutes < 20) { minState = 4;
+        } else if (minutes < 25) { minState = 5;
+        } else if (minutes < 30) { minState = 6;
+        } else if (minutes < 35) { minState = 7;
+        } else if (minutes < 40) { minState = 8;
+        } else if (minutes < 45) { minState = 9;
+        } else if (minutes < 50) { minState = 10;
+        } else if (minutes < 55) { minState = 11;
+        } else   /*minutes < 60*/{ minState = 12;
         }
         return minState;
     }
@@ -64,19 +55,18 @@ public class FuzzyLogicWarped extends FuzzyLogic {
         long nextMilli = 0;
         int minutes = mMinutes;
         int hours = mHours;
-        if        (minutes >= 56) { hours += 1; minutes = 5;
-        } else if (minutes >= 51) { minutes = 56;
-        } else if (minutes >= 46) { minutes = 51;
-        } else if (minutes >= 41) { minutes = 46;
-        } else if (minutes >= 36) { minutes = 41;
-        } else if (minutes == 35) { minutes = 36;
-        } else if (minutes >= 30) { minutes = 35;
-        } else if (minutes >= 25) { minutes = 30;
-        } else if (minutes >= 20) { minutes = 25;
-        } else if (minutes >= 15) { minutes = 20;
-        } else if (minutes >= 10) { minutes = 15;
-        } else if (minutes >= 5)  { minutes = 10;
-        } else                    { minutes = 5;
+        if        (minutes < 5)  { minutes = 5;
+        } else if (minutes < 10) { minutes = 10;
+        } else if (minutes < 15) { minutes = 15;
+        } else if (minutes < 20) { minutes = 20;
+        } else if (minutes < 25) { minutes = 25;
+        } else if (minutes < 30) { minutes = 30;
+        } else if (minutes < 35) { minutes = 35;
+        } else if (minutes < 40) { minutes = 40;
+        } else if (minutes < 45) { minutes = 45;
+        } else if (minutes < 50) { minutes = 50;
+        } else if (minutes < 55) { minutes = 55;
+        } else   /*minutes < 60*/{ hours += 1; minutes = 0;
         }
         nextMilli += (hours - mHours) * 3600000;
         nextMilli += (minutes - mMinutes) * 60000;
@@ -93,19 +83,18 @@ public class FuzzyLogicWarped extends FuzzyLogic {
             hours %= 12;
         }
 
-        if        (minutes >= 56) { timeM = -1; // O'CLOCK
-        } else if (minutes >= 51) { timeM = R.string.fuzzy_five;
-        } else if (minutes >= 46) { timeM = R.string.fuzzy_ten;
-        } else if (minutes >= 41) { timeM = R.string.fuzzy_quarter;
-        } else if (minutes >= 36) { timeM = R.string.fuzzy_twenty;
-        } else if (minutes == 35) { timeM = R.string.fuzzy_twenty_five;
-        } else if (minutes >= 30) { timeM = R.string.fuzzy_half;
-        } else if (minutes >= 25) { timeM = R.string.fuzzy_twenty_five;
-        } else if (minutes >= 20) { timeM = R.string.fuzzy_twenty;
-        } else if (minutes >= 15) { timeM = R.string.fuzzy_quarter;
-        } else if (minutes >= 10) { timeM = R.string.fuzzy_ten;
-        } else if (minutes >= 5)  { timeM = R.string.fuzzy_five;
-        } else                    { timeM = -1; // O'CLOCK
+        if        (minutes < 5)  { timeM = -1; // O'CLOCK;
+        } else if (minutes < 10) { timeM = R.string.fuzzy_five;
+        } else if (minutes < 15) { timeM = R.string.fuzzy_ten;
+        } else if (minutes < 20) { timeM = R.string.fuzzy_quarter;
+        } else if (minutes < 25) { timeM = R.string.fuzzy_twenty;
+        } else if (minutes < 30) { timeM = R.string.fuzzy_twenty_five;
+        } else if (minutes < 35) { timeM = R.string.fuzzy_half;
+        } else if (minutes < 40) { timeM = R.string.fuzzy_twenty_five;
+        } else if (minutes < 45) { timeM = R.string.fuzzy_twenty;
+        } else if (minutes < 50) { timeM = R.string.fuzzy_quarter;
+        } else if (minutes < 55) { timeM = R.string.fuzzy_ten;
+        } else   /*minutes < 60*/{ timeM = R.string.fuzzy_five;
         }
 
         // Adjust for next hour
@@ -139,7 +128,7 @@ public class FuzzyLogicWarped extends FuzzyLogic {
         }
 
         // Final shuffle
-        if (minutes >= 56 || minutes < 5) {
+        if (minutes < 5) {
             if (hours == 0 || hours == 12) {
                 // minutes show noon/midnight
                 timeM = timeH;
@@ -151,10 +140,10 @@ public class FuzzyLogicWarped extends FuzzyLogic {
                 timeH = R.string.fuzzy_oclock;
                 separator = -1;
             }
-        } else if (minutes >= 35) {
-            separator = R.string.fuzzy_to;
-        } else /* minutes >= 5 */ {
+        } else if (minutes < 35) {
             separator = R.string.fuzzy_past;
+        } else /* minutes >= 35 */ {
+            separator = R.string.fuzzy_to;
         }
 
         return new FuzzyLogic.FuzzyTime(timeM, timeH, separator);

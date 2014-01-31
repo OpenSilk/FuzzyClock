@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -38,18 +39,13 @@ import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class FuzzyClockView extends ViewGroup {
 
-    private FuzzyLogic mFuzzyLogic = new FuzzyLogicWarped();
-    protected TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
+    private FuzzyLogic mFuzzyLogic;
+    private TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;
     private boolean mAttached;
     private String mTimeZoneId;
-
-    private int mMinuteColorRes = android.R.color.white;
-    private int mHourColorRes = android.R.color.white;
-    private int mSeparatorColorRes = android.R.color.holo_blue_light;
-    private float mFontSize;
-    private int mClockStyle = FuzzyPrefs.STYLE_DEFAULT;
+    private int mClockStyle = FuzzyPrefs.CLOCK_STYLE_DEFAULT;
 
     private TimeChangedListener mCallback;
 
@@ -114,8 +110,6 @@ public class FuzzyClockView extends ViewGroup {
         mTimeDisplayHours = (TextView)findViewById(R.id.timeDisplayHours);
         mTimeDisplayMinutes = (TextView)findViewById(R.id.timeDisplayMinutes);
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
-        mFuzzyLogic.setCalendar(Calendar.getInstance());
-        setDateFormat();
     }
 
     @DebugLog
@@ -130,19 +124,19 @@ public class FuzzyClockView extends ViewGroup {
         measureChildren(widthMeasureSpec, heightMeasureSpec);
 
         switch (mClockStyle) {
-            case FuzzyPrefs.STYLE_STAGGERED:
+            case FuzzyPrefs.CLOCK_STYLE_STAGGERED:
                 // minutes + hours
                 maxWidth = getChildWidth(mTimeDisplayMinutes) + getChildWidth(mTimeDisplayHours);
                 // minutes + separator + hours
                 maxHeight = getChildHeight(mTimeDisplayMinutes) + getChildHeight(mTimeDisplaySeparator) + getChildHeight(mTimeDisplayHours);
                 break;
-            case FuzzyPrefs.STYLE_VERTICAL:
+            case FuzzyPrefs.CLOCK_STYLE_VERTICAL:
                 // largest of minutes, separator, hours
                 maxWidth = Math.max(Math.max(getChildWidth(mTimeDisplayMinutes), getChildWidth(mTimeDisplaySeparator)), getChildWidth(mTimeDisplayHours));
                 // minutes + separator + hours
                 maxHeight = getChildHeight(mTimeDisplayMinutes) + getChildHeight(mTimeDisplaySeparator) + getChildHeight(mTimeDisplayHours);
                 break;
-            case FuzzyPrefs.STYLE_HORIZONTAL:
+            case FuzzyPrefs.CLOCK_STYLE_HORIZONTAL:
             default:
                 // minutes + separator + hours
                 maxWidth = getChildWidth(mTimeDisplayMinutes) + getChildWidth(mTimeDisplaySeparator) + getChildWidth(mTimeDisplayHours);
@@ -170,7 +164,7 @@ public class FuzzyClockView extends ViewGroup {
         mX = sX = hX = getPaddingLeft();
         mY = sY = hY = getPaddingTop();
         switch (mClockStyle) {
-            case FuzzyPrefs.STYLE_STAGGERED:
+            case FuzzyPrefs.CLOCK_STYLE_STAGGERED:
                 // left
                 mX += 0;
                 // top
@@ -186,7 +180,7 @@ public class FuzzyClockView extends ViewGroup {
                 // separator + height of separator
                 hY += sY + getChildHeight(mTimeDisplaySeparator);
                 break;
-            case FuzzyPrefs.STYLE_VERTICAL:
+            case FuzzyPrefs.CLOCK_STYLE_VERTICAL:
                 // centered
                 mX += getMeasuredWidth() / 2 - getChildWidth(mTimeDisplayMinutes) / 2;
                 // top
@@ -202,7 +196,7 @@ public class FuzzyClockView extends ViewGroup {
                 // separator + height of separator;
                 hY += sY + getChildHeight(mTimeDisplaySeparator);
                 break;
-            case FuzzyPrefs.STYLE_HORIZONTAL:
+            case FuzzyPrefs.CLOCK_STYLE_HORIZONTAL:
             default:
                 // left
                 mX += 0;
@@ -243,9 +237,9 @@ public class FuzzyClockView extends ViewGroup {
         //}
 
         /* monitor 12/24-hour display preference */
-        mFormatChangeObserver = new FormatChangeObserver();
-        getContext().getContentResolver().registerContentObserver(
-                Settings.System.CONTENT_URI, true, mFormatChangeObserver);
+        //mFormatChangeObserver = new FormatChangeObserver();
+        //getContext().getContentResolver().registerContentObserver(
+        //        Settings.System.CONTENT_URI, true, mFormatChangeObserver);
         updateTime();
     }
 
@@ -260,8 +254,8 @@ public class FuzzyClockView extends ViewGroup {
         //if (mLive) {
             getContext().unregisterReceiver(mIntentReceiver);
         //}
-        getContext().getContentResolver().unregisterContentObserver(
-                mFormatChangeObserver);
+        //getContext().getContentResolver().unregisterContentObserver(
+        //        mFormatChangeObserver);
     }
 
     @DebugLog
@@ -336,46 +330,61 @@ public class FuzzyClockView extends ViewGroup {
         }
     }
 
-    public void updateColors() {
-        mTimeDisplayMinutes.setTextColor(getResources().getColor(mMinuteColorRes));
-        mTimeDisplayHours.setTextColor(getResources().getColor(mHourColorRes));
-        mTimeDisplaySeparator.setTextColor(getResources().getColor(mSeparatorColorRes));
+    public void setTextColor(int resId) {
+        setMinuteColor(resId);
+        setSeparatorColor(resId);
+        setHourColor(resId);
     }
 
-    public void setMinuteColor(int res) {
-        mMinuteColorRes = res;
+    public void setMinuteColor(int resId) {
+        mTimeDisplayMinutes.setTextColor(getResources().getColor(resId));
     }
 
-    public void setHourColor(int res) {
-        mHourColorRes = res;
+    public void setSeparatorColor(int resId) {
+        mTimeDisplaySeparator.setTextColor(getResources().getColor(resId));
     }
 
-    public void setSeparatorColor(int res) {
-        mSeparatorColorRes = res;
+    public void setHourColor(int resId) {
+        mTimeDisplayHours.setTextColor(getResources().getColor(resId));
     }
 
-    protected void updateSize() {
-        mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, mFontSize);
-        mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, mFontSize);
-        mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, mFontSize);
+    public void setTextSize(float size) {
+        setMinuteSize(size);
+        setSeparatorSize(size);
+        setHourSize(size);
+    }
+
+    public void setMinuteSize(float size) {
+        mTimeDisplayMinutes.setTextSize(COMPLEX_UNIT_SP, size);
         updateTextViewPadding();
     }
 
-    private void updateTextViewPadding() {
-        float topPaddingRatio = 0.25f;// 0.328f;
-        float bottomPaddingRatio = 0.18f;// 0.25f;
-        // Set negative padding to scrunch the lines closer together.
-        mTimeDisplayMinutes.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayMinutes.getTextSize()), 0,
-                (int) (-bottomPaddingRatio * mTimeDisplayMinutes.getTextSize()));
-        mTimeDisplaySeparator.setPadding(0, (int) (-topPaddingRatio * mTimeDisplaySeparator.getTextSize()), 0,
-                (int) (-bottomPaddingRatio * mTimeDisplaySeparator.getTextSize()));
-        mTimeDisplayHours.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayHours.getTextSize()), 0,
-                (int) (-bottomPaddingRatio * mTimeDisplayHours.getTextSize()));
+    public void setSeparatorSize(float size) {
+        mTimeDisplaySeparator.setTextSize(COMPLEX_UNIT_SP, size);
+        updateTextViewPadding();
     }
 
-    public void setFontSize(float size) {
-        mFontSize = size;
-        updateSize();
+    public void setHourSize(float size) {
+        mTimeDisplayHours.setTextSize(COMPLEX_UNIT_SP, size);
+        updateTextViewPadding();
+    }
+
+    public void setTypeface(int resId) {
+        setMinuteTypeface(resId);
+        setSeparatorTypeface(resId);
+        setHourTypeface(resId);
+    }
+
+    public void setMinuteTypeface(int style) {
+        mTimeDisplayMinutes.setTypeface(FuzzyPrefs.createTypeface(style));
+    }
+
+    public void setSeparatorTypeface(int style) {
+        mTimeDisplaySeparator.setTypeface(FuzzyPrefs.createTypeface(style));
+    }
+
+    public void setHourTypeface(int style) {
+        mTimeDisplayHours.setTypeface(FuzzyPrefs.createTypeface(style));
     }
 
     public void setClockStyle(int style) {
@@ -387,19 +396,40 @@ public class FuzzyClockView extends ViewGroup {
         return mFuzzyLogic;
     }
 
-    public void setLogic(FuzzyLogic logic) {
-        mFuzzyLogic = logic;
+    public void setLogic(int type) {
+        mFuzzyLogic = FuzzyPrefs.createLogic(type);
+        setDateFormat();
     }
 
     public void loadPreferences(FuzzyPrefs prefs) {
-        mMinuteColorRes = prefs.color.minute;
-        mHourColorRes = prefs.color.hour;
-        mSeparatorColorRes = prefs.color.separator;
-        mFontSize = prefs.size;
-        mClockStyle = prefs.style;
-        updateColors();
-        updateSize();
-        requestLayout();
+        setMinuteColor(prefs.minute.color);
+        setMinuteSize(prefs.minute.size);
+        setMinuteTypeface(prefs.minute.style);
+        setSeparatorColor(prefs.separator.color);
+        setSeparatorSize(prefs.separator.size);
+        setSeparatorTypeface(prefs.separator.style);
+        setHourColor(prefs.hour.color);
+        setHourSize(prefs.hour.size);
+        setHourTypeface(prefs.hour.style);
+        setLogic(prefs.clockLogic);
+        setClockStyle(prefs.clockStyle);
+    }
+
+    public void setDateFormat() {
+        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
+    }
+
+    public void setLive(boolean live) {
+        mLive = live;
+    }
+
+    public void setTimeZone(String id) {
+        mTimeZoneId = id;
+        updateTime();
+    }
+
+    public void registerCallback(TimeChangedListener l) {
+        mCallback = l;
     }
 
     private int getChildWidth(final View v) {
@@ -416,25 +446,16 @@ public class FuzzyClockView extends ViewGroup {
         return 0;
     }
 
-    public void setDateFormat() {
-        mFuzzyLogic.setDateFormat(android.text.format.DateFormat.is24HourFormat(getContext()));
-    }
-
-    public boolean is24HourFormat() {
-        return mFuzzyLogic.is24HourFormat();
-    }
-
-    public void setLive(boolean live) {
-        mLive = live;
-    }
-
-    public void setTimeZone(String id) {
-        mTimeZoneId = id;
-        updateTime();
-    }
-
-    public void registerCallback(TimeChangedListener l) {
-        mCallback = l;
+    private void updateTextViewPadding() {
+        float topPaddingRatio = 0.25f;// 0.328f;
+        float bottomPaddingRatio = 0.18f;// 0.25f;
+        // Set negative padding to scrunch the lines closer together.
+        mTimeDisplayMinutes.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayMinutes.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplayMinutes.getTextSize()));
+        mTimeDisplaySeparator.setPadding(0, (int) (-topPaddingRatio * mTimeDisplaySeparator.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplaySeparator.getTextSize()));
+        mTimeDisplayHours.setPadding(0, (int) (-topPaddingRatio * mTimeDisplayHours.getTextSize()), 0,
+                (int) (-bottomPaddingRatio * mTimeDisplayHours.getTextSize()));
     }
 
 }

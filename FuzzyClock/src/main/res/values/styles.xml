@@ -23,19 +23,40 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="fuzzy_bold">
-        <item name="android:textStyle">bold</item>
-        <item name="android:fontFamily">sans-serif</item>
-    </style>
-
     <style name="fuzzy_regular">
         <item name="android:textStyle">normal</item>
         <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="fuzzy_regular_bold">
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="fuzzy_condensed">
         <item name="android:textStyle">normal</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="fuzzy_condensed_bold">
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="fuzzy_thin">
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif-thin</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="fuzzy_thin_bold">
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-thin</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
 </resources>

@@ -130,8 +130,8 @@ abstract class FuzzySettings extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
-        getActionBar().setSelectedNavigationItem(mFuzzyPrefs.style);
-        mPicker.setValue((int) mFuzzyPrefs.size);
+        getActionBar().setSelectedNavigationItem(mFuzzyPrefs.clockStyle);
+        mPicker.setValue((int) mFuzzyPrefs.minute.size);
         initFuzzyClockViews();
     }
 
@@ -153,8 +153,8 @@ abstract class FuzzySettings extends Activity implements
             chooseSeparatorColor();
         } else if (v == mButtonReset) {
             mFuzzyPrefs.reset();
-            getActionBar().setSelectedNavigationItem(mFuzzyPrefs.style);
-            mPicker.setValue((int) mFuzzyPrefs.size);
+            getActionBar().setSelectedNavigationItem(mFuzzyPrefs.clockStyle);
+            mPicker.setValue((int) mFuzzyPrefs.minute.size);
         } else if (v == mButtonDone) {
             finish();
         } else if (v == mButtonDismiss) {
@@ -172,23 +172,23 @@ abstract class FuzzySettings extends Activity implements
     @DebugLog
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        mFuzzyClock.setFontSize(newVal);
-        mFuzzyPrefs.size = (float) newVal;
+        mFuzzyClock.setMinuteSize(newVal);
+        mFuzzyPrefs.minute.size = (float) newVal;
     }
 
     @DebugLog
     @Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        mFuzzyPrefs.style = itemPosition;
-        mFuzzyClock.setClockStyle(mFuzzyPrefs.style);
+        mFuzzyPrefs.clockStyle = itemPosition;
+        mFuzzyClock.setClockStyle(mFuzzyPrefs.clockStyle);
         return true;
     }
 
     @DebugLog
     private void initFuzzyClockViews() {
+        mFuzzyClock.loadPreferences(mFuzzyPrefs);
         mFuzzyClock.setLive(false);
         mFuzzyClock.updateTime(0,26);
-        mFuzzyClock.loadPreferences(mFuzzyPrefs);
 
         mMinutes = findViewById(R.id.timeDisplayMinutes);
         mMinutes.setOnClickListener(this);
@@ -220,13 +220,12 @@ abstract class FuzzySettings extends Activity implements
     protected void chooseMinuteColor() {
         new AlertDialog.Builder(this)
                 .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.color.minute),
+                        getColorEntry(mFuzzyPrefs.minute.color),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.color.minute = mColorResources[which];
+                                mFuzzyPrefs.minute.color = mColorResources[which];
                                 mFuzzyClock.setMinuteColor(mColorResources[which]);
-                                mFuzzyClock.updateColors();
                                 dialog.dismiss();
                             }
                         })
@@ -237,13 +236,12 @@ abstract class FuzzySettings extends Activity implements
     protected void chooseHourColor() {
         new AlertDialog.Builder(this)
                 .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.color.hour),
+                        getColorEntry(mFuzzyPrefs.hour.color),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.color.hour = mColorResources[which];
+                                mFuzzyPrefs.hour.color = mColorResources[which];
                                 mFuzzyClock.setHourColor(mColorResources[which]);
-                                mFuzzyClock.updateColors();
                                 dialog.dismiss();
                             }
                         })
@@ -254,13 +252,12 @@ abstract class FuzzySettings extends Activity implements
     protected void chooseSeparatorColor() {
         new AlertDialog.Builder(this)
                 .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.color.separator),
+                        getColorEntry(mFuzzyPrefs.separator.color),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.color.separator = mColorResources[which];
+                                mFuzzyPrefs.separator.color = mColorResources[which];
                                 mFuzzyClock.setSeparatorColor(mColorResources[which]);
-                                mFuzzyClock.updateColors();
                                 dialog.dismiss();
                             }
                         })

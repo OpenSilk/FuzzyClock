@@ -24,7 +24,6 @@ import android.os.Handler;
 import android.service.dreams.DreamService;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import hugo.weaving.DebugLog;
 
@@ -38,11 +37,19 @@ public class FuzzyDreams extends DreamService {
     private FuzzyClockView mFuzzyClock;
 
     private final Handler mHandler = new Handler();
-
     private final ScreenSaverAnimation mMoveSaverRunnable;
+    private final FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
+        @DebugLog
+        @Override
+        public void onTimeChanged() {
+            // When text has changed we need to recalculate so we don't run off the screen
+            mHandler.removeCallbacks(mMoveSaverRunnable);
+            mHandler.post(mMoveSaverRunnable);
+        }
+    };
 
     public FuzzyDreams() {
-        if (LOGV) Log.v(TAG, "Screensaver allocated");
+        if (LOGV) Log.v(TAG, "Daydream allocated");
         mMoveSaverRunnable = new ScreenSaverAnimation(mHandler);
     }
 
@@ -57,7 +64,7 @@ public class FuzzyDreams extends DreamService {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mHandler.removeCallbacks(mMoveSaverRunnable);
-        setupLayout();
+        setupView();
         mHandler.post(mMoveSaverRunnable);
     }
 
@@ -69,7 +76,7 @@ public class FuzzyDreams extends DreamService {
         setFullscreen(true);
         setScreenBright(false);
         mHandler.removeCallbacks(mMoveSaverRunnable);
-        setupLayout();
+        setupView();
         mHandler.post(mMoveSaverRunnable);
     }
 
@@ -80,30 +87,18 @@ public class FuzzyDreams extends DreamService {
         mHandler.removeCallbacks(mMoveSaverRunnable);
     }
 
-    private void setupLayout() {
+    private void setupView() {
         setContentView(R.layout.fuzzy_dreams);
 
         mSaverView = findViewById(R.id.clock_wrapper);
         mSaverView.setAlpha(0);
         mContentView = (View) mSaverView.getParent();
 
-        //Todo embed in xml
-        getWindow().getLayoutInflater().inflate(R.layout.fuzzy_clock, (LinearLayout)mSaverView, true);
         mFuzzyClock = (FuzzyClockView) findViewById(R.id.fuzzy_clock);
-
         mFuzzyClock.registerCallback(mListener);
         mFuzzyClock.loadPreferences(new FuzzyPrefs(this));
 
         mMoveSaverRunnable.registerViews(mContentView, mSaverView);
     }
 
-    final FuzzyClockView.TimeChangedListener mListener = new FuzzyClockView.TimeChangedListener() {
-        @DebugLog
-        @Override
-        public void onTimeChanged() {
-            // When text has changed we need to recalculate so we don't run off the screen
-            mHandler.removeCallbacks(mMoveSaverRunnable);
-            mHandler.post(mMoveSaverRunnable);
-        }
-    };
 }

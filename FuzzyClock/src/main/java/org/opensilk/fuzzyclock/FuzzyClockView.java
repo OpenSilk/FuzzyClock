@@ -369,10 +369,10 @@ public class FuzzyClockView extends ViewGroup {
         updateTextViewPadding();
     }
 
-    public void setTypeface(int resId) {
-        setMinuteTypeface(resId);
-        setSeparatorTypeface(resId);
-        setHourTypeface(resId);
+    public void setTypeface(int style) {
+        setMinuteTypeface(style);
+        setSeparatorTypeface(style);
+        setHourTypeface(style);
     }
 
     public void setMinuteTypeface(int style) {
@@ -401,6 +401,7 @@ public class FuzzyClockView extends ViewGroup {
         setDateFormat();
     }
 
+    @DebugLog
     public void loadPreferences(FuzzyPrefs prefs) {
         setMinuteColor(prefs.minute.color);
         setMinuteSize(prefs.minute.size);

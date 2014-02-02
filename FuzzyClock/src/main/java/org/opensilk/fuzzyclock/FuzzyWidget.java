@@ -41,9 +41,6 @@ public class FuzzyWidget extends AppWidgetProvider {
     @DebugLog
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        for (int id: appWidgetIds) {
-            new FuzzyPrefs(context, id).remove();
-        }
         Intent i = new Intent(AppWidgetManager.ACTION_APPWIDGET_DELETED, null, context, FuzzyWidgetService.class);
         i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
         context.startService(i);

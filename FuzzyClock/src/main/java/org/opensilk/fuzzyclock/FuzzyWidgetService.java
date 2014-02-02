@@ -77,6 +77,17 @@ public class FuzzyWidgetService extends Service {
         }
     };
 
+    private class UpdateWidgetRunnable implements Runnable {
+        private final int widgetId;
+        public UpdateWidgetRunnable(int widgetId) {
+            this.widgetId = widgetId;
+        }
+        @Override
+        public void run() {
+            updateWidget(widgetId);
+        }
+    }
+
     private class FormatChangeObserver extends ContentObserver {
         public FormatChangeObserver() {
             super(new Handler());
@@ -92,7 +103,6 @@ public class FuzzyWidgetService extends Service {
     public void onCreate() {
         super.onCreate();
         mContext = this;
-
 
         /* monitor time ticks, time changed, timezone */
         IntentFilter filter = new IntentFilter();
@@ -124,19 +134,21 @@ public class FuzzyWidgetService extends Service {
             if (!mWidgetSettings.containsKey((Integer) id)) {
                 mHandler.post(mUpdateSettingsRunnable);
             }
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateWidget(id);
-                }
-            });
+            if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                mHandler.post(new UpdateWidgetRunnable(id));
+            }
         } else if (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_DELETED)) {
             int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
             if (ids != null) {
                 for (int id: ids) {
                     cancelUpdate(id);
+                    new FuzzyPrefs(mContext, id).remove();
+                    if (mWidgetSettings.containsKey((Integer) id)) {
+                        mWidgetSettings.remove((Integer) id);
+                    }
                 }
             }
+            mHandler.post(mUpdateWidgetsRunnable);
         }
         return START_STICKY;
     }

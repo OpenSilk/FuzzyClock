@@ -1,33 +1,50 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.+'
-        classpath 'com.jakewharton.hugo:hugo-plugin:1.0.1'
-    }
-}
+
 apply plugin: 'android'
 apply plugin: 'hugo'
 
-repositories {
-    mavenCentral()
-}
-
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.0.3"
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 19
     }
 
+    signingConfigs {
+        release {
+            def Properties keyProps = new Properties()
+            keyProps.load(new FileInputStream(file('../../KeyStore/release2.properties')))
+            storeFile file(keyProps["store"])
+            keyAlias keyProps["alias"]
+            storePassword keyProps["storePass"]
+            keyPassword keyProps["pass"]
+        }
+        debug {
+            def Properties keyProps = new Properties()
+            keyProps.load(new FileInputStream(file('../../KeyStore/debug2.properties')))
+            storeFile file(keyProps["store"])
+            keyAlias keyProps["alias"]
+            storePassword keyProps["storePass"]
+            keyPassword keyProps["pass"]
+        }
+    }
+
     buildTypes {
         debug {
             packageNameSuffix ".debug"
+            versionNameSuffix "${project.gitSha()}".isEmpty() ? "-SNAPSHOT" : "-SNAPSHOT-${project.gitSha()}"
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.debug
+        }
+        release {
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
         }
     }
+
 }
 
 dependencies {

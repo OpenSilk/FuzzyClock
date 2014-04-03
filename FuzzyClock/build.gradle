@@ -2,6 +2,15 @@
 apply plugin: 'android'
 apply plugin: 'hugo'
 
+def versionMajor = 0
+def versionMinor = 1
+def versionPatch = 0
+def versionBuild = 0 // bump for dogfood builds, public betas, etc.
+
+assert(versionMinor < 100) // Double digits
+assert(versionPatch < 100) // Double digits
+assert(versionBuild < 100) // Double digits
+
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
@@ -9,6 +18,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 19
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
+        versionName String.format("%d.%d.%d", versionMajor, versionMinor, versionPatch)
     }
 
     signingConfigs {

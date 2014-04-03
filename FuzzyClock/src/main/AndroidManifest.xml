@@ -17,11 +17,7 @@
 *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.opensilk.fuzzyclock"
-    android:versionCode="0001"
-    android:versionName="0.1" >
-
-    <uses-sdk android:targetSdkVersion="19" />
+    package="org.opensilk.fuzzyclock">
 
     <application
         android:allowBackup="true"

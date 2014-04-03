@@ -103,7 +103,6 @@ public class FuzzyClockView extends ViewGroup {
         super(context, attrs, defStyle);
     }
 
-    @DebugLog
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -112,7 +111,6 @@ public class FuzzyClockView extends ViewGroup {
         mTimeDisplaySeparator = (TextView)findViewById(R.id.timeDisplaySeparator);
     }
 
-    @DebugLog
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -157,7 +155,6 @@ public class FuzzyClockView extends ViewGroup {
                 resolveSizeAndState(maxHeight, heightMeasureSpec, 0));
     }
 
-    @DebugLog
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int mX, mY, sX, sY, hX, hY;
@@ -219,7 +216,6 @@ public class FuzzyClockView extends ViewGroup {
         mTimeDisplayHours.layout(hX, hY, hX + getChildWidth(mTimeDisplayHours), hY + getChildHeight(mTimeDisplayHours));
     }
 
-    @DebugLog
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -243,7 +239,6 @@ public class FuzzyClockView extends ViewGroup {
         updateTime();
     }
 
-    @DebugLog
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -258,7 +253,6 @@ public class FuzzyClockView extends ViewGroup {
         //        mFormatChangeObserver);
     }
 
-    @DebugLog
     protected boolean updateLogic() {
         if (mLive) {
             mFuzzyLogic.getCalendar().setTimeInMillis(System.currentTimeMillis());
@@ -270,13 +264,11 @@ public class FuzzyClockView extends ViewGroup {
         return mFuzzyLogic.hasChanged();
     }
 
-    @DebugLog
     public void updateTime(Calendar c) {
         mFuzzyLogic.setCalendar(c);
         updateTime();
     }
 
-    @DebugLog
     public void updateTime(int hour, int minute) {
         // set the alarm text
         final Calendar c = Calendar.getInstance();
@@ -286,7 +278,6 @@ public class FuzzyClockView extends ViewGroup {
         updateTime();
     }
 
-    @DebugLog
     public void updateTime() {
         updateLogic();
 
@@ -401,7 +392,6 @@ public class FuzzyClockView extends ViewGroup {
         setDateFormat();
     }
 
-    @DebugLog
     public void loadPreferences(FuzzyPrefs prefs) {
         setMinuteColor(prefs.minute.color);
         setMinuteSize(prefs.minute.size);

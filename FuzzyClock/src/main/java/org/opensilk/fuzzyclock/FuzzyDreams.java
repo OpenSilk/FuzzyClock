@@ -53,13 +53,11 @@ public class FuzzyDreams extends DreamService {
         mMoveSaverRunnable = new ScreenSaverAnimation(mHandler);
     }
 
-    @DebugLog
     @Override
     public void onCreate() {
         super.onCreate();
     }
 
-    @DebugLog
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -68,7 +66,6 @@ public class FuzzyDreams extends DreamService {
         mHandler.post(mMoveSaverRunnable);
     }
 
-    @DebugLog
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -80,7 +77,6 @@ public class FuzzyDreams extends DreamService {
         mHandler.post(mMoveSaverRunnable);
     }
 
-    @DebugLog
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();

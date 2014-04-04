@@ -17,19 +17,21 @@
 *  along with Fuzzy Clock.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/clock_wrapper"
+        android:paddingTop="@dimen/settings_padding_top_clock"
+        android:orientation="vertical"
+        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:id="@+id/scrollView">
+        android:layout_height="match_parent">
 
-            <FrameLayout
-                android:id="@+id/base"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+        <include layout="@layout/fuzzy_clock" />
 
-    </ScrollView>
+    </LinearLayout>
+
 </LinearLayout>

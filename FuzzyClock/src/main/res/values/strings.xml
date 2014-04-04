@@ -64,6 +64,7 @@
     <string name="settings_title">Fuzzy dream settings</string>
     <string name="settings_title_widget">Fuzzy widget settings</string>
 
+    <!-- Colors -->
     <string name="holo_blue">Holo blue</string>
     <string name="holo_red">Holo red</string>
     <string name="holo_green">Holo green</string>
@@ -71,11 +72,34 @@
     <string name="holo_purple">Holo purple</string>
     <string name="white">White</string>
 
-    <string name="reset">Reset</string>
+    <!-- Font styles -->
+    <string name="regular">Regular</string>
+    <string name="regular_bold">Regular bold</string>
+    <string name="condensed">Condensed</string>
+    <string name="condensed_bold">Condensed bold</string>
+    <string name="thin">Thin</string>
+    <string name="this_bold">Thin bold</string>
+
+    <!-- Layout styles -->
     <string name="horizontal">Horizontal</string>
     <string name="vertical">Vertical</string>
     <string name="staggered">Staggered</string>
-    <string name="picker_adjust_size">Adjust size</string>
-    <string name="settings_help">Tips:\n1) Click on the words to change colors.\n2) Scroll the wheel to change size.\n3) Make sure to rotate device to setup landscape options.</string>
+
+    <!-- Logic styles -->
+    <string name="fast">Fast</string>
+    <string name="precise">Precise</string>
+    <string name="slow">Slow</string>
+    <string name="warped">Warped</string>
+
+    <!-- Buttons -->
+    <string name="logic_style">Logic level</string>
+    <string name="font_style">Font style</string>
+    <string name="color">Choose color</string>
+
+    <!-- Pref Titles -->
+    <string name="common">Common</string>
+    <string name="minutes">Minutes</string>
+    <string name="separator">Separator</string>
+    <string name="hours">Hours</string>
 
 </resources>

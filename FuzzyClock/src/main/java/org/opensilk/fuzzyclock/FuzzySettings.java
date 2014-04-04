@@ -17,251 +17,241 @@
  */
 package org.opensilk.fuzzyclock;
 
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.NumberPicker;
-import android.widget.SpinnerAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import hugo.weaving.DebugLog;
 
-import static android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS;
-import static android.app.ActionBar.NAVIGATION_MODE_LIST;
-
-abstract class FuzzySettings extends Activity implements
-        View.OnClickListener,
-        NumberPicker.OnValueChangeListener,
-        ActionBar.OnNavigationListener {
+abstract class FuzzySettings extends FragmentActivity {
 
     protected FuzzyPrefs mFuzzyPrefs;
 
-    protected FuzzyClockView mFuzzyClock;
-    protected View mMinutes, mHours, mSeparator;
-    protected Button mButtonDone, mButtonReset;
-
+    //Container
     private FrameLayout mRoot;
-    private View mTipsView;
-    private Button mButtonDismiss;
-    private NumberPicker mPicker;
 
-    private CharSequence[] mColorEntries;
-    private static final int[] mColorResources = {
-            android.R.color.holo_blue_light,
-            android.R.color.holo_red_light,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_purple,
-            android.R.color.white,
-    };
+    //View pager
+    private StylePagerAdapter mStylePagerAdapter;
+    private PrefsPagerAdapter mPrefsPagerAdapter;
+    private ViewPager mStyleViewPager;
+    private ViewPager mPrefsViewPager;
 
-    private boolean mFirstRun;
+    /**
+     * Style fragments register with this for callbacks from the pref fragments
+     */
+    final List<PrefChangeListener> mPrefChangeListeners = new ArrayList<>(3);
 
-    @DebugLog
+    /**
+     * Interface passing information from the pref fragments to the style fragments
+     */
+    interface PrefChangeListener {
+        void onPrefChanged(FuzzyPrefs prefs);
+        void setSelected(String pref);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Set base layout
         setContentView(R.layout.fuzzy_settings_base);
         mRoot = (FrameLayout) findViewById(R.id.base);
+        // Inflate the real settings into the base layout
         mRoot.addView(getLayoutInflater().inflate(R.layout.fuzzy_settings, mRoot, false));
 
-        //todo embed in xml
-        LinearLayout wrapper = (LinearLayout) findViewById(R.id.clock_wrapper);
-        getLayoutInflater().inflate(R.layout.fuzzy_clock, wrapper, true);
-        mFuzzyClock = (FuzzyClockView) findViewById(R.id.fuzzy_clock);
+        // Init style fragments
+        mStylePagerAdapter = new StylePagerAdapter(getSupportFragmentManager());
+        mStyleViewPager = (ViewPager) findViewById(R.id.style_pager);
+        mStyleViewPager.setAdapter(mStylePagerAdapter);
+        mStyleViewPager.setOffscreenPageLimit(mStylePagerAdapter.getCount() - 1);
+        mStyleViewPager.setOnPageChangeListener(mStylePageChangeListener);
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mFirstRun = prefs.getBoolean("first_run", true);
-        if (mFirstRun) {
-            mTipsView = getLayoutInflater().inflate(R.layout.fuzzy_settings_tips, mRoot, false);
-            mRoot.addView(mTipsView);
-            //prefs.edit().putBoolean("first_run", false).commit();
-        }
+        // Init pref fragments
+        mPrefsPagerAdapter = new PrefsPagerAdapter(getSupportFragmentManager());
+        mPrefsViewPager = (ViewPager) findViewById(R.id.prefs_pager);
+        mPrefsViewPager.setAdapter(mPrefsPagerAdapter);
+        mPrefsViewPager.setOffscreenPageLimit(mPrefsPagerAdapter.getCount() - 1);
+        mPrefsViewPager.setOnPageChangeListener(mPrefPageChangeListener);
 
-        mColorEntries = new CharSequence[] {
-                getString(R.string.holo_blue),
-                getString(R.string.holo_red),
-                getString(R.string.holo_green),
-                getString(R.string.holo_orange),
-                getString(R.string.holo_purple),
-                getString(R.string.white)
-        };
-
-        SpinnerAdapter spinner = ArrayAdapter.createFromResource(this,
-                R.array.style_list,
-                android.R.layout.simple_spinner_dropdown_item);
-
-        getActionBar().setListNavigationCallbacks(spinner, this);
-        getActionBar().setNavigationMode(NAVIGATION_MODE_LIST);
-
-        mPicker = (NumberPicker) findViewById(R.id.numberPicker);
-        mPicker.setOnValueChangedListener(this);
-        mPicker.setMinValue(getResources().getInteger(R.integer.fuzzy_font_size_min));
-        mPicker.setMaxValue(getResources().getInteger(R.integer.fuzzy_font_size_max));
-        mPicker.setWrapSelectorWheel(false);
-        mPicker.setDescendantFocusability(FOCUS_BLOCK_DESCENDANTS);
-
-        mButtonDone = (Button) findViewById(R.id.button_done);
-        mButtonDone.setOnClickListener(this);
-
-        mButtonReset = (Button) findViewById(R.id.button_reset);
-        mButtonReset.setOnClickListener(this);
-
-        if (mFirstRun) {
-            mPicker.setEnabled(false);
-            mButtonDone.setEnabled(false);
-            mButtonReset.setEnabled(false);
-            mButtonDismiss = (Button) findViewById(R.id.button_dismiss);
-            mButtonDismiss.setOnClickListener(this);
-        }
-
+        getActionBar().setIcon(R.drawable.ic_action_tick_white);
+        getActionBar().setHomeButtonEnabled(true);
     }
 
-    @DebugLog
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPrefChangeListeners.clear();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        getActionBar().setSelectedNavigationItem(mFuzzyPrefs.clockStyle);
-        mPicker.setValue((int) mFuzzyPrefs.minute.size);
-        initFuzzyClockViews();
+        mPrefsViewPager.setCurrentItem(0);
+        mStyleViewPager.setCurrentItem(mFuzzyPrefs.clockStyle);
     }
 
-    @DebugLog
     @Override
     protected void onPause() {
         mFuzzyPrefs.save();
         super.onPause();
     }
 
-    @DebugLog
     @Override
-    public void onClick(View v) {
-        if (v == mMinutes) {
-            chooseMinuteColor();
-        } else if (v == mHours) {
-            chooseHourColor();
-        } else if (v == mSeparator) {
-            chooseSeparatorColor();
-        } else if (v == mButtonReset) {
-            mFuzzyPrefs.reset();
-            getActionBar().setSelectedNavigationItem(mFuzzyPrefs.clockStyle);
-            mPicker.setValue((int) mFuzzyPrefs.minute.size);
-        } else if (v == mButtonDone) {
-            finish();
-        } else if (v == mButtonDismiss) {
-            mMinutes.setEnabled(true);
-            mHours.setEnabled(true);
-            mSeparator.setEnabled(true);
-            mPicker.setEnabled(true);
-            mButtonDone.setEnabled(true);
-            mButtonReset.setEnabled(true);
-            mRoot.removeView(mTipsView);
-            mFirstRun = false;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
-    @DebugLog
-    @Override
-    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        mFuzzyClock.setMinuteSize(newVal);
-        mFuzzyPrefs.minute.size = (float) newVal;
-    }
-
-    @DebugLog
-    @Override
-    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        mFuzzyPrefs.clockStyle = itemPosition;
-        mFuzzyClock.setClockStyle(mFuzzyPrefs.clockStyle);
-        return true;
-    }
-
-    @DebugLog
-    private void initFuzzyClockViews() {
-        mFuzzyClock.loadPreferences(mFuzzyPrefs);
-        mFuzzyClock.setLive(false);
-        mFuzzyClock.updateTime(0,26);
-
-        mMinutes = findViewById(R.id.timeDisplayMinutes);
-        mMinutes.setOnClickListener(this);
-
-        mHours = findViewById(R.id.timeDisplayHours);
-        mHours.setOnClickListener(this);
-
-        mSeparator = findViewById(R.id.timeDisplaySeparator);
-        mSeparator.setOnClickListener(this);
-
-        if (mFirstRun) {
-            mMinutes.setEnabled(false);
-            mHours.setEnabled(false);
-            mSeparator.setEnabled(false);
+    /**
+     * Style ViewPager page change listener
+     */
+    final ViewPager.SimpleOnPageChangeListener mStylePageChangeListener = new ViewPager.SimpleOnPageChangeListener() {
+        @Override
+        @DebugLog
+        public void onPageSelected(int position) {
+            mFuzzyPrefs.clockStyle = mStylePagerAdapter.mFragments.get(position).style;
         }
-    }
+    };
 
-    @DebugLog
-    private int getColorEntry(int color) {
-        for (int ii=0;ii< mColorResources.length;ii++) {
-            if (mColorResources[ii] == color) {
-                return ii;
+    /**
+     * Prefs ViewPager page change listener
+     */
+    final ViewPager.SimpleOnPageChangeListener mPrefPageChangeListener = new ViewPager.SimpleOnPageChangeListener() {
+        @Override
+        @DebugLog
+        public void onPageSelected(int position) {
+            for (PrefChangeListener l : mPrefChangeListeners) {
+                l.setSelected(mPrefsPagerAdapter.mFragments.get(position).pref);
             }
         }
-        return mColorResources[0];
+    };
+
+    /**
+     * Called from pref fragments
+     */
+    protected void notifyPrefChanged() {
+        for (PrefChangeListener l : mPrefChangeListeners) {
+            l.onPrefChanged(mFuzzyPrefs);
+        }
     }
 
-    @DebugLog
-    protected void chooseMinuteColor() {
-        new AlertDialog.Builder(this)
-                .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.minute.color),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.minute.color = mColorResources[which];
-                                mFuzzyClock.setMinuteColor(mColorResources[which]);
-                                dialog.dismiss();
-                            }
-                        })
-                .show();
+    /**
+     * Adapter for Style ViewPager
+     */
+    class StylePagerAdapter extends FragmentPagerAdapter {
+        List<Holder> mFragments = new ArrayList<>(3);
+        // DO NOT REORDER
+        final CharSequence[] mTitles = new CharSequence[] {
+                getString(R.string.horizontal),
+                getString(R.string.vertical),
+                getString(R.string.staggered)
+        };
+
+        StylePagerAdapter(FragmentManager fm) {
+            super(fm);
+            // DO NOT REORDER
+            mFragments.add(new Holder(FuzzySettingsStylePage.class.getName(), FuzzyPrefs.CLOCK_STYLE_HORIZONTAL));
+            mFragments.add(new Holder(FuzzySettingsStylePage.class.getName(), FuzzyPrefs.CLOCK_STYLE_VERTICAL));
+            mFragments.add(new Holder(FuzzySettingsStylePage.class.getName(), FuzzyPrefs.CLOCK_STYLE_STAGGERED));
+        }
+
+        @Override
+        public Fragment getItem(int pos) {
+            return Fragment.instantiate(FuzzySettings.this, mFragments.get(pos).className, mFragments.get(pos).getArguments());
+        }
+
+        @Override
+        public int getCount() {
+            return mFragments.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mTitles[position];
+        }
+
+        class Holder {
+            String className;
+            int style;
+
+            Holder(String className, int style) {
+                this.className = className;
+                this.style = style;
+            }
+
+            Bundle getArguments() {
+                Bundle b = new Bundle();
+                b.putInt("style", style);
+                return b;
+            }
+        }
+
     }
 
-    @DebugLog
-    protected void chooseHourColor() {
-        new AlertDialog.Builder(this)
-                .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.hour.color),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.hour.color = mColorResources[which];
-                                mFuzzyClock.setHourColor(mColorResources[which]);
-                                dialog.dismiss();
-                            }
-                        })
-                .show();
-    }
+    /**
+     * Adapter for Prefs ViewPager
+     */
+    class PrefsPagerAdapter extends FragmentPagerAdapter {
+        List<Holder> mFragments = new ArrayList<Holder>();
+        // DO NOT REORDER
+        final CharSequence[] mTitles = new CharSequence[] {
+                getString(R.string.common),
+                getString(R.string.minutes),
+                getString(R.string.separator),
+                getString(R.string.hours)
+        };
 
-    @DebugLog
-    protected void chooseSeparatorColor() {
-        new AlertDialog.Builder(this)
-                .setSingleChoiceItems(mColorEntries,
-                        getColorEntry(mFuzzyPrefs.separator.color),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mFuzzyPrefs.separator.color = mColorResources[which];
-                                mFuzzyClock.setSeparatorColor(mColorResources[which]);
-                                dialog.dismiss();
-                            }
-                        })
-                .show();
+        PrefsPagerAdapter(FragmentManager fm) {
+            super(fm);
+            // DO NOT REORDER
+            mFragments.add(new Holder(FuzzySettingsPrefsCommonPage.class.getName(), "common"));
+            mFragments.add(new Holder(FuzzySettingsPrefsPage.class.getName(), "minute"));
+            mFragments.add(new Holder(FuzzySettingsPrefsPage.class.getName(), "separator"));
+            mFragments.add(new Holder(FuzzySettingsPrefsPage.class.getName(), "hour"));
+        }
+
+        @Override
+        public Fragment getItem(int pos) {
+            return Fragment.instantiate(FuzzySettings.this, mFragments.get(pos).className, mFragments.get(pos).getArguments());
+        }
+
+        @Override
+        public int getCount() {
+            return mFragments.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mTitles[position];
+        }
+
+        class Holder {
+            String className;
+            String pref;
+
+            Holder(String className, String pref) {
+                this.className = className;
+                this.pref = pref;
+            }
+
+            Bundle getArguments() {
+                Bundle b = new Bundle();
+                b.putString("pref", pref);
+                return b;
+            }
+        }
     }
 
 }

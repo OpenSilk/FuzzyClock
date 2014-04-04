@@ -40,7 +40,7 @@ import static android.util.TypedValue.COMPLEX_UNIT_SP;
 public class FuzzyClockView extends ViewGroup {
 
     private FuzzyLogic mFuzzyLogic;
-    private TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
+    TextView mTimeDisplayHours, mTimeDisplayMinutes, mTimeDisplaySeparator;
     private ContentObserver mFormatChangeObserver;
     private boolean mLive = true;
     private boolean mAttached;
@@ -96,11 +96,12 @@ public class FuzzyClockView extends ViewGroup {
     }
 
     public FuzzyClockView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public FuzzyClockView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mFuzzyLogic = FuzzyPrefs.createLogic(FuzzyPrefs.CLOCK_LOGIC_DEFAULT);
     }
 
     @Override

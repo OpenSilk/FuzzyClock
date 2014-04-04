@@ -27,7 +27,7 @@
 
         <activity android:name="org.opensilk.fuzzyclock.FuzzyDreamSettings"
             android:label="@string/settings_title"
-            android:theme="@android:style/Theme.Holo"
+            android:theme="@style/AppTheme"
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:exported="true">
@@ -38,7 +38,7 @@
 
         <activity android:name="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
             android:label="@string/settings_title_widget"
-            android:theme="@android:style/Theme.Holo"
+            android:theme="@style/AppTheme"
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:exported="true">

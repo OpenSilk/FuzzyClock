@@ -19,6 +19,7 @@ package org.opensilk.fuzzyclock;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 
 import hugo.weaving.DebugLog;
@@ -50,15 +51,18 @@ public class FuzzyWidgetSettings extends FuzzySettings {
         mFuzzyPrefs = new FuzzyPrefs(this, mAppWidgetId);
     }
 
-    @DebugLog
     @Override
-    public void onClick(View v) {
-        if (v == mButtonDone) {
-            mFuzzyPrefs.save();
-            // Force refresh;
-            startService(new Intent(this, FuzzyWidgetService.class));
-            setResult(RESULT_OK, mResult);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // Force refresh;
+                mFuzzyPrefs.save();
+                startService(new Intent(this, FuzzyWidgetService.class));
+                setResult(RESULT_OK, mResult);
+                finish();
+                return true;
         }
-        super.onClick(v);
+        return super.onOptionsItemSelected(item);
     }
+
 }

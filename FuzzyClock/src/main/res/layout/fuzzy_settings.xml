@@ -25,7 +25,7 @@
         android:id="@+id/style_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="40">
 
         <android.support.v4.view.PagerTitleStrip
             android:layout_width="match_parent"
@@ -43,13 +43,13 @@
         android:id="@+id/prefs_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2">
+        android:layout_weight="60">
 
         <android.support.v4.view.PagerTitleStrip
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"/>
 
-        </android.support.v4.view.ViewPager>
+    </android.support.v4.view.ViewPager>
 
 </LinearLayout>

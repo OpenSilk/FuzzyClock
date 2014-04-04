@@ -19,12 +19,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.opensilk.fuzzyclock">
 
+    <!-- Used to request ads. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
 
+        <!-- Ad stuff -->
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <activity android:name="com.google.android.gms.ads.AdActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+
+        <!-- Day dream settings -->
         <activity android:name="org.opensilk.fuzzyclock.FuzzyDreamSettings"
             android:label="@string/settings_title"
             android:theme="@style/AppTheme"
@@ -36,6 +46,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Widget Settings -->
         <activity android:name="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
             android:label="@string/settings_title_widget"
             android:theme="@style/AppTheme"
@@ -47,6 +58,7 @@
             </intent-filter>
         </activity>
 
+        <!-- Widget -->
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
@@ -55,6 +67,7 @@
                 android:resource="@xml/fuzzy_widget"/>
         </receiver>
 
+        <!-- Widget broadcast receiver -->
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidgetTimeChangeReceiver"
             android:enabled="false">
             <intent-filter>
@@ -65,6 +78,7 @@
 
         <service android:name="org.opensilk.fuzzyclock.FuzzyWidgetService"/>
 
+        <!-- Day dream -->
         <service
             android:name="org.opensilk.fuzzyclock.FuzzyDreams"
             android:exported="true"

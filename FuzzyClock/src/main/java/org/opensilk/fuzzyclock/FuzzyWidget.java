@@ -19,8 +19,10 @@ package org.opensilk.fuzzyclock;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import hugo.weaving.DebugLog;
@@ -46,9 +48,28 @@ public class FuzzyWidget extends AppWidgetProvider {
         context.startService(i);
     }
 
-    @DebugLog
     @Override
+    @DebugLog
+    public void onEnabled(Context context) {
+        PackageManager pm = context.getPackageManager();
+        if (pm != null) {
+            pm.setComponentEnabledSetting(
+                    new ComponentName(context, FuzzyWidgetTimeChangeReceiver.class),
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
+    }
+
+    @Override
+    @DebugLog
     public void onDisabled(Context context) {
+        PackageManager pm = context.getPackageManager();
+        if (pm != null) {
+            pm.setComponentEnabledSetting(
+                    new ComponentName(context, FuzzyWidgetTimeChangeReceiver.class),
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
     }
 
 }

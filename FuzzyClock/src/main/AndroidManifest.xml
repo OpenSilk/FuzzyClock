@@ -55,6 +55,14 @@
                 android:resource="@xml/fuzzy_widget"/>
         </receiver>
 
+        <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidgetTimeChangeReceiver"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET"/>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+
         <service android:name="org.opensilk.fuzzyclock.FuzzyWidgetService"/>
 
         <service

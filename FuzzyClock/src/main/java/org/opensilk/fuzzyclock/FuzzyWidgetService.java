@@ -33,11 +33,12 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.support.v4.util.ArrayMap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 
-import java.util.HashMap;
 import java.util.Locale;
 
 import hugo.weaving.DebugLog;
@@ -52,41 +53,8 @@ public class FuzzyWidgetService extends Service {
     private AlarmManager mAlarmManager;
     private FuzzyClockView mFuzzyClock;
     private AppWidgetManager mWidgetManager;
-    private HashMap<Integer, FuzzyPrefs> mWidgetSettings;
-    /* called by system on minute ticks */
-    private final Handler mHandler = new Handler();
-    private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
-        @DebugLog
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            mHandler.post(mUpdateWidgetsRunnable);
-        }
-    };
-
-    private final Runnable mUpdateSettingsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateSettings();
-        }
-    };
-
-    private final Runnable mUpdateWidgetsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateWidgets();
-        }
-    };
-
-    private class UpdateWidgetRunnable implements Runnable {
-        private final int widgetId;
-        public UpdateWidgetRunnable(int widgetId) {
-            this.widgetId = widgetId;
-        }
-        @Override
-        public void run() {
-            updateWidget(widgetId);
-        }
-    }
+    private static final ArrayMap<Integer, FuzzyPrefs> sWidgetSettings = new ArrayMap<>(4);
+    private final Handler mHandler = new UpdateHandler();
 
     private class FormatChangeObserver extends ContentObserver {
         public FormatChangeObserver() {
@@ -94,28 +62,20 @@ public class FuzzyWidgetService extends Service {
         }
         @Override
         public void onChange(boolean selfChange) {
-            mHandler.post(mUpdateWidgetsRunnable);
+            mHandler.sendMessage(mHandler.obtainMessage(UPDATE_ALL_WIDGETS, -1));
         }
     }
 
-    @DebugLog
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
-
-        /* monitor time ticks, time changed, timezone */
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_TIME_CHANGED);
-        filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-        mContext.registerReceiver(mIntentReceiver, filter);
 
         //mFormatChangeObserver = new FormatChangeObserver();
         //mContext.getContentResolver().registerContentObserver(
         //        Settings.System.CONTENT_URI, true, mFormatChangeObserver
         //);
 
-        mWidgetSettings = new HashMap<Integer, FuzzyPrefs>();
         mWidgetManager = AppWidgetManager.getInstance(mContext);
         mAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -125,30 +85,33 @@ public class FuzzyWidgetService extends Service {
     @DebugLog
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // No action means we want to reinit everything
         if (intent.getAction() == null) {
-            mHandler.post(mUpdateSettingsRunnable);
-            mHandler.post(mUpdateWidgetsRunnable);
+            mHandler.sendEmptyMessage(UPDATE_SETTINGS);
+            mHandler.sendMessage(mHandler.obtainMessage(UPDATE_ALL_WIDGETS, startId));
+        // Update the specified widget
         } else if (intent.getAction().startsWith("scheduled_update")) {
             final int id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
-            if (!mWidgetSettings.containsKey((Integer) id)) {
-                mHandler.post(mUpdateSettingsRunnable);
+            if (!sWidgetSettings.containsKey((Integer) id)) {
+                mHandler.sendEmptyMessage(UPDATE_SETTINGS);
             }
             if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                mHandler.post(new UpdateWidgetRunnable(id));
+                mHandler.sendMessage(mHandler.obtainMessage(UPDATE_SINGLE_WIDGET, id, startId));
             }
+        // A widget was deleted, remove it from our settings map
         } else if (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_DELETED)) {
             int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
             if (ids != null) {
                 for (int id: ids) {
                     cancelUpdate(id);
                     new FuzzyPrefs(mContext, id).remove();
-                    if (mWidgetSettings.containsKey((Integer) id)) {
-                        mWidgetSettings.remove((Integer) id);
+                    if (sWidgetSettings.containsKey((Integer) id)) {
+                        sWidgetSettings.remove((Integer) id);
                     }
                 }
             }
-            mHandler.post(mUpdateWidgetsRunnable);
+            mHandler.sendMessage(mHandler.obtainMessage(UPDATE_ALL_WIDGETS, startId));
         }
         return START_STICKY;
     }
@@ -161,19 +124,13 @@ public class FuzzyWidgetService extends Service {
     @DebugLog
     @Override
     public void onDestroy() {
-        mContext.unregisterReceiver(mIntentReceiver);
         //mContext.getContentResolver().unregisterContentObserver(mFormatChangeObserver);
         super.onDestroy();
     }
 
-    @DebugLog
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mHandler.post(mUpdateSettingsRunnable);
-        mHandler.post(mUpdateWidgetsRunnable);
-    }
-
+    /**
+     * Updates all appwidgets
+     */
     @DebugLog
     private void updateWidgets() {
         int[] widgetIds = mWidgetManager.getAppWidgetIds(new ComponentName(mContext, FuzzyWidget.class));
@@ -187,9 +144,13 @@ public class FuzzyWidgetService extends Service {
         }
     }
 
+    /**
+     * Updates single appwidget, will schedule next update based on current logic
+     * @param id
+     */
     @DebugLog
     private void updateWidget(int id) {
-        FuzzyPrefs settings = mWidgetSettings.get((Integer) id);
+        FuzzyPrefs settings = sWidgetSettings.get((Integer) id);
         if (settings == null) {
             return; // Once setup is done we will be called again.
         }
@@ -221,6 +182,12 @@ public class FuzzyWidgetService extends Service {
         scheduleUpdate(mFuzzyClock.getLogic().getCalendar().getTimeInMillis(), mFuzzyClock.getLogic().getNextIntervalMilli(), id);
     }
 
+    /**
+     * Schedules next update with alarmManager
+     * @param now
+     * @param nextMilli
+     * @param id
+     */
     @DebugLog
     private void scheduleUpdate(long now, long nextMilli, int id) {
         PendingIntent pendingIntent = createPendingIntent(id);
@@ -234,14 +201,27 @@ public class FuzzyWidgetService extends Service {
                 (nextMilli/1000) + "s from now for widget " + id);
     }
 
+    /**
+     * Cancels pending updates for appwidget id
+     * @param id
+     */
     private void cancelUpdate(int id) {
         cancelUpdate(createPendingIntent(id));
     }
 
+    /**
+     * Cancels pending updates for pending intent
+     * @param pendingIntent
+     */
     private void cancelUpdate(PendingIntent pendingIntent) {
         mAlarmManager.cancel(pendingIntent);
     }
 
+    /**
+     * Creates unique pending intent for given appwidget id
+     * @param id
+     * @return
+     */
     private PendingIntent createPendingIntent(int id) {
         Intent i = new Intent(String.format(Locale.US, "scheduled_update_%d", id),
                 null, mContext, FuzzyWidgetService.class);
@@ -249,13 +229,44 @@ public class FuzzyWidgetService extends Service {
         return PendingIntent.getService(mContext, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    /**
+     * Reinitializes appwidget settings
+     */
     @DebugLog
     private void updateSettings() {
+        sWidgetSettings.clear();
         int[] widgetIds = mWidgetManager.getAppWidgetIds(new ComponentName(mContext, FuzzyWidget.class));
         if (widgetIds != null && widgetIds.length > 0) {
             for (int id: widgetIds) {
                 if (LOGV) Log.v(TAG, "Updating widget settings id=" + id);
-                mWidgetSettings.put((Integer) id, new FuzzyPrefs(mContext, id));
+                sWidgetSettings.put((Integer) id, new FuzzyPrefs(mContext, id));
+            }
+        }
+    }
+
+    static final int UPDATE_SETTINGS = 0;
+    static final int UPDATE_ALL_WIDGETS = 1;
+    static final int UPDATE_SINGLE_WIDGET = 2;
+
+    class UpdateHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UPDATE_SETTINGS:
+                    updateSettings();
+                    break;
+                case UPDATE_ALL_WIDGETS:
+                    updateWidgets();
+                    if (msg.arg1 != -1) {
+                        stopSelf(msg.arg1);
+                    }
+                    break;
+                case UPDATE_SINGLE_WIDGET:
+                    updateWidget(msg.arg1);
+                    if (msg.arg2 != -1) {
+                        stopSelf(msg.arg2);
+                    }
+                    break;
             }
         }
     }

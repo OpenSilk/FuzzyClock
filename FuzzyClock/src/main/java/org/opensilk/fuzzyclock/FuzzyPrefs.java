@@ -135,7 +135,12 @@ public class FuzzyPrefs {
     }
 
     private void init() {
-        init(mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT);
+        if (mWidgetId >= 0) {
+            // Widget dont get landscape prefs
+            init(true);
+        } else {
+            init(mContext.getResources().getConfiguration().orientation == ORIENTATION_PORTRAIT);
+        }
     }
 
     private void init(boolean isPortrait) {

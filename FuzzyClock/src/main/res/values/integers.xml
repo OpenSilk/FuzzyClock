@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="fuzzy_font_size_min_port">18</integer>
+    <integer name="fuzzy_font_size_max_port">50</integer>
+    <integer name="fuzzy_font_size_default_port">26</integer>
+
+    <integer name="fuzzy_font_size_min_land">30</integer>
+    <integer name="fuzzy_font_size_max_land">70</integer>
+    <integer name="fuzzy_font_size_default_land">40</integer>
+</resources>

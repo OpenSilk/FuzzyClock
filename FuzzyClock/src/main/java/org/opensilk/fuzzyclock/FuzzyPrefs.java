@@ -99,6 +99,7 @@ public class FuzzyPrefs {
 
     private final Context mContext;
     private final int mWidgetId;
+    protected boolean isPortrait;
 
     private String mPrefMinColor;
     private String mPrefSepColor;
@@ -144,6 +145,7 @@ public class FuzzyPrefs {
     }
 
     private void init(boolean isPortrait) {
+        this.isPortrait = isPortrait;
         if (mWidgetId == -1) {
             mPrefMinColor = isPortrait ? DREAM_COLOR_MINUTE_PORT : DREAM_COLOR_MINUTE_LAND;
             mPrefMinSize = isPortrait ? DREAM_FONT_SIZE_MINUTE_PORT : DREAM_FONT_SIZE_MINUTE_LAND;
@@ -171,13 +173,19 @@ public class FuzzyPrefs {
         }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         minute.color = prefs.getInt(mPrefMinColor, TEXT_COLOR_DEF_MIN);
-        minute.size = prefs.getFloat(mPrefMinSize, (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+        minute.size = prefs.getFloat(mPrefMinSize, isPortrait
+                ? (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_port)
+                : (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_land));
         minute.style = prefs.getInt(mPrefMinStyle, TEXT_STYLE_DEFAULT);
         separator.color = prefs.getInt(mPrefSepColor, TEXT_COLOR_DEF_SEP);
-        separator.size = prefs.getFloat(mPrefSepSize, (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+        separator.size = prefs.getFloat(mPrefSepSize, isPortrait
+                ? (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_port)
+                : (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_land));
         separator.style = prefs.getInt(mPrefSepStyle, TEXT_STYLE_DEFAULT);
         hour.color = prefs.getInt(mPrefHourColor, TEXT_COLOR_DEF_HOUR);
-        hour.size = prefs.getFloat(mPrefHourSize, (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default));
+        hour.size = prefs.getFloat(mPrefHourSize, isPortrait
+                ? (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_port)
+                : (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_land));
         hour.style = prefs.getInt(mPrefHourStyle, TEXT_STYLE_DEFAULT);
         clockStyle = prefs.getInt(mPrefClockStyle, CLOCK_STYLE_DEFAULT);
         clockLogic = prefs.getInt(mPrefClockLogic, CLOCK_LOGIC_DEFAULT);
@@ -187,8 +195,9 @@ public class FuzzyPrefs {
         minute.color = TEXT_COLOR_DEF_MIN;
         separator.color = TEXT_COLOR_DEF_SEP;
         hour.color = TEXT_COLOR_DEF_HOUR;
-        minute.size = separator.size = hour.size =
-                mContext.getResources().getInteger(R.integer.fuzzy_font_size_default);
+        minute.size = separator.size = hour.size = isPortrait
+                ? (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_port)
+                : (float) mContext.getResources().getInteger(R.integer.fuzzy_font_size_default_land);
         minute.style = separator.style = hour.style =
                 TEXT_STYLE_DEFAULT;
         clockStyle = CLOCK_STYLE_DEFAULT;

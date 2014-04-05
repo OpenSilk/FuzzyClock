@@ -91,9 +91,6 @@ public class FuzzySettingsPrefsPage extends Fragment implements
         View v = inflater.inflate(R.layout.fuzzy_settings_prefs_page, container, false);
         mPicker = (NumberPicker) v.findViewById(R.id.numberPicker);
         mPicker.setOnValueChangedListener(this);
-        mPicker.setMinValue(getResources().getInteger(R.integer.fuzzy_font_size_min));
-        mPicker.setMaxValue(getResources().getInteger(R.integer.fuzzy_font_size_max));
-        mPicker.setWrapSelectorWheel(false);
         mPicker.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         mColorButton = (Button) v.findViewById(R.id.button_color);
         mColorButton.setOnClickListener(this);
@@ -103,9 +100,18 @@ public class FuzzySettingsPrefsPage extends Fragment implements
     }
 
     @Override
+    @DebugLog
     public void onResume() {
         super.onResume();
         if (mActivity.mFuzzyPrefs != null) {
+            if (mActivity.mFuzzyPrefs.isPortrait) {
+                mPicker.setMinValue(getResources().getInteger(R.integer.fuzzy_font_size_min_port));
+                mPicker.setMaxValue(getResources().getInteger(R.integer.fuzzy_font_size_max_port));
+            } else {
+                mPicker.setMinValue(getResources().getInteger(R.integer.fuzzy_font_size_min_land));
+                mPicker.setMaxValue(getResources().getInteger(R.integer.fuzzy_font_size_max_land));
+            }
+            mPicker.setWrapSelectorWheel(false);
             switch (mPref) {
                 case "hour":
                     mPicker.setValue((int)mActivity.mFuzzyPrefs.hour.size);
@@ -130,6 +136,7 @@ public class FuzzySettingsPrefsPage extends Fragment implements
     }
 
     @Override
+    @DebugLog
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         switch (mPref) {
             case "hour":

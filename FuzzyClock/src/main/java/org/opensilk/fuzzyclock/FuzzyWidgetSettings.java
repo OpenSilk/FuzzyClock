@@ -20,7 +20,6 @@ package org.opensilk.fuzzyclock;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 
 import hugo.weaving.DebugLog;
 
@@ -29,7 +28,7 @@ import static android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID;
 
 public class FuzzyWidgetSettings extends FuzzySettings {
 
-    private int mAppWidgetId = INVALID_APPWIDGET_ID;
+    protected int mAppWidgetId = INVALID_APPWIDGET_ID;
     private final Intent mResult = new Intent();
 
     @DebugLog

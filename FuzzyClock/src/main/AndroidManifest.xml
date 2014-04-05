@@ -58,6 +58,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Widget/Dream preview -->
+        <activity android:name="org.opensilk.fuzzyclock.FuzzyPreview"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@style/AppThemeFullScreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+         </activity>
+
         <!-- Widget -->
         <receiver android:name="org.opensilk.fuzzyclock.FuzzyWidget">
             <intent-filter>

@@ -21,22 +21,37 @@
     android:layout_height="match_parent">
 
     <View
-        android:id="@+id/divider_one"
+        android:id="@+id/divider_three"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?android:attr/dividerHorizontal"/>
 
     <Button
+        android:id="@+id/button_preview"
+        android:layout_above="@id/divider_three"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/preview"
+        style="?android:attr/buttonBarButtonStyle"/>
+
+    <View
+        android:id="@+id/divider_two"
+        android:layout_above="@id/button_preview"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/dividerHorizontal"/>
+
+    <Button
         android:id="@+id/button_logic"
-        android:layout_above="@id/divider_one"
+        android:layout_above="@id/divider_two"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/logic_style"
         style="?android:attr/buttonBarButtonStyle"/>
 
     <View
-        android:id="@+id/divider_two"
+        android:id="@+id/divider_one"
         android:layout_above="@id/button_logic"
         android:layout_width="match_parent"
         android:layout_height="1dp"

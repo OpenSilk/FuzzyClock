@@ -92,9 +92,10 @@
     <string name="warped">Warped</string>
 
     <!-- Buttons -->
+    <string name="preview">Preview</string>
     <string name="logic_style">Logic level</string>
     <string name="font_style">Font style</string>
-    <string name="color">Choose color</string>
+    <string name="color">Font color</string>
 
     <!-- Pref Titles -->
     <string name="common">Common</string>

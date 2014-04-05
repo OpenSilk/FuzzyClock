@@ -20,6 +20,7 @@ package org.opensilk.fuzzyclock;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -27,9 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
+import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 
 /**
  * Created by drew on 4/3/14.
@@ -39,6 +38,7 @@ public class FuzzySettingsPrefsCommonPage extends Fragment implements
 
     protected FuzzySettings mActivity;
 
+    protected Button mPreviewButton;
     protected Button mLogicButton;
     protected CharSequence[] mLogicEntries;
 
@@ -63,6 +63,8 @@ public class FuzzySettingsPrefsCommonPage extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fuzzy_settings_prefs_common_page, container, false);
+        mPreviewButton = (Button) v.findViewById(R.id.button_preview);
+        mPreviewButton.setOnClickListener(this);
         mLogicButton = (Button) v.findViewById(R.id.button_logic);
         mLogicButton.setOnClickListener(this);
         return v;
@@ -72,6 +74,12 @@ public class FuzzySettingsPrefsCommonPage extends Fragment implements
     public void onClick(View v) {
         if (v == mLogicButton) {
             chooseLogic();
+        } else if (v == mPreviewButton) {
+            Intent i = new Intent(mActivity, FuzzyPreview.class);
+            if (mActivity instanceof FuzzyWidgetSettings) {
+                i.putExtra(EXTRA_APPWIDGET_ID, ((FuzzyWidgetSettings) mActivity).mAppWidgetId);
+            }
+            mActivity.startActivity(i);
         }
     }
 

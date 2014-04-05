@@ -40,39 +40,28 @@
         android:layout_height="1dp"
         android:background="?android:attr/dividerHorizontal"/>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/button_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?android:attr/buttonBarStyle">
-
-        <Button
-            android:id="@+id/button_color"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/color"
-            style="?android:attr/buttonBarButtonStyle"/>
-
-    </LinearLayout>
+        android:text="@string/color"
+        style="?android:attr/buttonBarButtonStyle"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="?android:attr/dividerHorizontal"/>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/button_font"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?android:attr/buttonBarStyle">
+        android:text="@string/font_style"
+        style="?android:attr/buttonBarButtonStyle"/>
 
-        <Button
-            android:id="@+id/button_font"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/font_style"
-            style="?android:attr/buttonBarButtonStyle"/>
-
-    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/dividerHorizontal"/>
 
 </LinearLayout>

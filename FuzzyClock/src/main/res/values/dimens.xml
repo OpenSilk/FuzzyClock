@@ -22,4 +22,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="settings_padding_top_picker">16dp</dimen>
     <dimen name="settings_padding_top_clock">8dp</dimen>
+
+    <dimen name="settings_min_height_land">500dp</dimen>
 </resources>

@@ -1,0 +1,25 @@
+Yes, another fuzzy clock clone
+
+Not fuzzy like kitties but fuzzy as in 'not precise'. Before cell phones, when asked
+for the time, one might reply something like 'five after six'. Fuzzy clock aims
+to do this with text; displaying the time in a human readable fashion. Fuzzy clock is
+intentionally minimalistic, there is no date, am/pm, or weather. Just a rough estimate
+of what time it is.
+
+Features:
+* Widget and Daydream
+* Choose text color, font style, and size
+* 3 layout choices
+** Horizontal
+** Stacked (vertical)
+** Staggered (steps)
+* 4 logic choices
+** Fast: Time displayed in 5 minute intervals up to 5 minutes fast
+** Slow: Time displayed in 5 minute intervals up to 5 minutes slow
+** Precise: Time displayed in 1 minute intervals 'precisely' on time
+** Warped: Aims to warp your perception of time.
+           The first half of the hour runs slow and creeps along, behind
+           the actual time. Giving you a few extra minutes complete your task.
+           The second half of the hour races, skipping ahead... into the future.
+           Giving you some extra minutes to commute or prepare. Getting you out
+           the door and where you need to be on time.

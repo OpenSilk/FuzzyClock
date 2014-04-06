@@ -103,4 +103,6 @@
     <string name="separator">Separator</string>
     <string name="hours">Hours</string>
 
+    <!-- misc -->
+    <string name="first_run">This dream has separate preferences for portrait and landscape. Be sure to rotate your device to setup both.</string>
 </resources>

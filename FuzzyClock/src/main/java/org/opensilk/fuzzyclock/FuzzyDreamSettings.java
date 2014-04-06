@@ -17,6 +17,10 @@
  */
 package org.opensilk.fuzzyclock;
 
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import hugo.weaving.DebugLog;
 
 public class FuzzyDreamSettings extends FuzzySettings {
@@ -26,6 +30,14 @@ public class FuzzyDreamSettings extends FuzzySettings {
     protected void onStart() {
         super.onStart();
         mFuzzyPrefs = new FuzzyPrefs(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("firstRun", true)) {
+            new AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.first_run))
+                    .setNeutralButton(getString(android.R.string.ok), null)
+                    .show();
+            prefs.edit().putBoolean("firstRun", false).apply();
+        }
     }
 
 }

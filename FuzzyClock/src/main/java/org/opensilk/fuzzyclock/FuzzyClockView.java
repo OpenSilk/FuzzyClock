@@ -322,22 +322,22 @@ public class FuzzyClockView extends ViewGroup {
         }
     }
 
-    public void setTextColor(int resId) {
-        setMinuteColor(resId);
-        setSeparatorColor(resId);
-        setHourColor(resId);
+    public void setTextColor(int color) {
+        setMinuteColor(color);
+        setSeparatorColor(color);
+        setHourColor(color);
     }
 
-    public void setMinuteColor(int resId) {
-        mTimeDisplayMinutes.setTextColor(getResources().getColor(resId));
+    public void setMinuteColor(int color) {
+        mTimeDisplayMinutes.setTextColor(color);
     }
 
-    public void setSeparatorColor(int resId) {
-        mTimeDisplaySeparator.setTextColor(getResources().getColor(resId));
+    public void setSeparatorColor(int color) {
+        mTimeDisplaySeparator.setTextColor(color);
     }
 
-    public void setHourColor(int resId) {
-        mTimeDisplayHours.setTextColor(getResources().getColor(resId));
+    public void setHourColor(int color) {
+        mTimeDisplayHours.setTextColor(color);
     }
 
     public void setTextSize(float size) {

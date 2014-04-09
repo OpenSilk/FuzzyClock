@@ -28,8 +28,8 @@ public class FuzzyDreamSettings extends FuzzySettings {
     @DebugLog
     @Override
     protected void onStart() {
-        super.onStart();
         mFuzzyPrefs = new FuzzyPrefs(this);
+        super.onStart();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getBoolean("firstRun", true)) {
             new AlertDialog.Builder(this)

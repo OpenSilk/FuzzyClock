@@ -71,6 +71,7 @@
     <string name="holo_orange">Holo orange</string>
     <string name="holo_purple">Holo purple</string>
     <string name="white">White</string>
+    <string name="custom">Custom</string>
 
     <!-- Font styles -->
     <string name="regular">Regular</string>
@@ -93,7 +94,7 @@
 
     <!-- Buttons -->
     <string name="preview">Preview</string>
-    <string name="logic_style">Logic level</string>
+    <string name="logic_style">Fuzziness</string>
     <string name="font_style">Font style</string>
     <string name="color">Font color</string>
 
@@ -102,6 +103,12 @@
     <string name="minutes">Minutes</string>
     <string name="separator">Separator</string>
     <string name="hours">Hours</string>
+
+    <!--Color picker-->
+    <string name="opacity">Opacity</string>
+    <string name="saturation_value">Saturation value</string>
+    <string name="value">Value</string>
+    <string name="saturation">Saturation</string>
 
     <!-- misc -->
     <string name="first_run">This dream has separate preferences for portrait and landscape. Be sure to rotate your device to setup both.</string>

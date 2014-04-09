@@ -46,8 +46,8 @@ public class FuzzyWidgetSettings extends FuzzySettings {
     @DebugLog
     @Override
     protected void onStart() {
-        super.onStart();
         mFuzzyPrefs = new FuzzyPrefs(this, mAppWidgetId);
+        super.onStart();
     }
 
     @Override

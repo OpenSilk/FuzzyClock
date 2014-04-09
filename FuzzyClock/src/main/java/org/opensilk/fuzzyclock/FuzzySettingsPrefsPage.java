@@ -45,14 +45,7 @@ public class FuzzySettingsPrefsPage extends Fragment implements
     private Button mFontStyle;
 
     private CharSequence[] mColorEntries;
-    private static final int[] sColorResources = {
-            android.R.color.holo_blue_light,
-            android.R.color.holo_red_light,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_purple,
-            android.R.color.white,
-    };
+    private int[] mColorResources;
 
     private CharSequence[] mFontStyleEntries;
 
@@ -67,13 +60,23 @@ public class FuzzySettingsPrefsPage extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mColorResources = new int[] {
+                getResources().getColor(android.R.color.holo_blue_light),
+                getResources().getColor(android.R.color.holo_red_light),
+                getResources().getColor(android.R.color.holo_green_light),
+                getResources().getColor(android.R.color.holo_orange_dark),
+                getResources().getColor(android.R.color.holo_purple),
+                getResources().getColor(android.R.color.white),
+                0
+        };
         mColorEntries = new CharSequence[] {
                 getString(R.string.holo_blue),
                 getString(R.string.holo_red),
                 getString(R.string.holo_green),
                 getString(R.string.holo_orange),
                 getString(R.string.holo_purple),
-                getString(R.string.white)
+                getString(R.string.white),
+                getString(R.string.custom)
         };
         // DO NOT REORDER
         mFontStyleEntries = new CharSequence[] {
@@ -153,7 +156,7 @@ public class FuzzySettingsPrefsPage extends Fragment implements
     }
 
     protected int getColorEntry() {
-        int color = -1;
+        int color = 0;
         switch (mPref) {
             case "hour":
                 color = mActivity.mFuzzyPrefs.hour.color;
@@ -165,24 +168,24 @@ public class FuzzySettingsPrefsPage extends Fragment implements
                 color = mActivity.mFuzzyPrefs.minute.color;
                 break;
         }
-        for (int ii=0;ii< sColorResources.length;ii++) {
-            if (sColorResources[ii] == color) {
+        for (int ii=0;ii< mColorResources.length;ii++) {
+            if (mColorResources[ii] == color) {
                 return ii;
             }
         }
-        return sColorResources[0];
+        return mColorResources.length-1;
     }
 
     protected void setNewColor(int which) {
         switch (mPref) {
             case "hour":
-                mActivity.mFuzzyPrefs.hour.color = sColorResources[which];
+                mActivity.mFuzzyPrefs.hour.color = mColorResources[which];
                 break;
             case "separator":
-                mActivity.mFuzzyPrefs.separator.color = sColorResources[which];
+                mActivity.mFuzzyPrefs.separator.color = mColorResources[which];
                 break;
             case "minute":
-                mActivity.mFuzzyPrefs.minute.color = sColorResources[which];
+                mActivity.mFuzzyPrefs.minute.color = mColorResources[which];
                 break;
         }
         mActivity.notifyPrefChanged();
@@ -196,8 +199,12 @@ public class FuzzySettingsPrefsPage extends Fragment implements
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                setNewColor(which);
                                 dialog.dismiss();
+                                if (which == mColorEntries.length-1) {
+                                    FuzzyColorPickerDialog.newInstance(mPref).show(getFragmentManager(), "color_picker");
+                                } else {
+                                    setNewColor(which);
+                                }
                             }
                         })
                 .show();

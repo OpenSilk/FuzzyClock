@@ -74,9 +74,9 @@ public class FuzzyPrefs {
     private static final String WIDGET_LOGIC_PORT = "widget_%d_logic_port";
     private static final String WIDGET_LOGIC_LAND = "widget_%d_logic_land";
 
-    public static final int TEXT_COLOR_DEF_MIN = android.R.color.white;
-    public static final int TEXT_COLOR_DEF_SEP = android.R.color.holo_blue_light;
-    public static final int TEXT_COLOR_DEF_HOUR = android.R.color.white;
+    public static final int TEXT_COLOR_DEF_MIN = 0xffffffff; //android.R.color.white;
+    public static final int TEXT_COLOR_DEF_SEP = 0xff33b5e5; //android.R.color.holo_blue_light;
+    public static final int TEXT_COLOR_DEF_HOUR = 0xffffffff; //android.R.color.white;
 
     public static final int TEXT_STYLE_REGULAR = 0;
     public static final int TEXT_STYLE_REGULAR_BOLD = 1;

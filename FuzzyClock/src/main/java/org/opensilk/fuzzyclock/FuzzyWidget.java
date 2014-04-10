@@ -67,7 +67,7 @@ public class FuzzyWidget extends AppWidgetProvider {
         if (pm != null) {
             pm.setComponentEnabledSetting(
                     new ComponentName(context, FuzzyWidgetTimeChangeReceiver.class),
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
         }
     }

@@ -18,7 +18,7 @@
 -->
 <resources>
 
-    <string name="app_name">Fuzzy Clock</string>
+    <string name="app_name" translatable="false">FuzzyClock</string>
 
     <!-- Fuzzy Clock Resources -->
     <string name="fuzzy_one">ONE</string>
@@ -60,7 +60,7 @@
     <string name="fuzzy_quarter">QUARTER</string>
     <string name="fuzzy_to">TO</string>
 
-    <!-- Settings Resources -->
+    <!-- Settings titles -->
     <string name="settings_title">Fuzzy dream settings</string>
     <string name="settings_title_widget">Fuzzy widget settings</string>
 
@@ -73,13 +73,13 @@
     <string name="white">White</string>
     <string name="custom">Custom</string>
 
-    <!-- Font styles -->
+    <!-- Typefaces -->
     <string name="regular">Regular</string>
     <string name="regular_bold">Regular bold</string>
     <string name="condensed">Condensed</string>
     <string name="condensed_bold">Condensed bold</string>
     <string name="thin">Thin</string>
-    <string name="this_bold">Thin bold</string>
+    <string name="thin_bold">Thin bold</string>
 
     <!-- Layout styles -->
     <string name="horizontal">Horizontal</string>
@@ -94,9 +94,9 @@
 
     <!-- Buttons -->
     <string name="preview">Preview</string>
-    <string name="logic_style">Fuzziness</string>
-    <string name="font_style">Font style</string>
-    <string name="color">Font color</string>
+    <string name="fuzziness">Fuzziness</string>
+    <string name="typeface">Typeface</string>
+    <string name="color">Color</string>
 
     <!-- Pref Titles -->
     <string name="common">Common</string>

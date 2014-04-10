@@ -22,6 +22,7 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/fuzzy_widget"
+    android:previewImage="@drawable/fuzzy_preview"
     android:configure="org.opensilk.fuzzyclock.FuzzyWidgetSettings"
     android:widgetCategory="home_screen|keyguard">
 

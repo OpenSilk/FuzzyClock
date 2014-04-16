@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.provider.Settings;
@@ -320,6 +322,25 @@ public class FuzzyClockView extends ViewGroup {
         if (mCallback != null) {
             mCallback.onTimeChanged();
         }
+    }
+
+    /**
+     * CReates a bitmap, used for widgets
+     * @return
+     */
+    public Bitmap createBitmap() {
+        // Where the magic happens... w & h are 0 without this
+        int spec = MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        measure(spec, spec);
+        layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+        if (getMeasuredWidth() == 0 || getMeasuredHeight() == 0) {
+            return null;
+        }
+        // Draw view into a bitmap
+        Bitmap bitmap = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bitmap);
+        draw(c);
+        return bitmap;
     }
 
     public void setTextColor(int color) {

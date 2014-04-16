@@ -29,7 +29,6 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -158,16 +157,10 @@ public class FuzzyWidgetService extends Service {
         mFuzzyClock.loadPreferences(settings);
         mFuzzyClock.setDateFormat();
         mFuzzyClock.updateTime();
-        // Where the magic happens... w & h are 0 without this
-        mFuzzyClock.measure(0, 0);
-        mFuzzyClock.layout(0, 0, mFuzzyClock.getMeasuredWidth(), mFuzzyClock.getMeasuredHeight());
-        if (mFuzzyClock.getMeasuredWidth() == 0 || mFuzzyClock.getMeasuredHeight() == 0) {
+        Bitmap bitmap = mFuzzyClock.createBitmap();
+        if (bitmap == null) {
             return;
         }
-        // Draw view into a bitmap
-        Bitmap bitmap = Bitmap.createBitmap(mFuzzyClock.getMeasuredWidth(), mFuzzyClock.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bitmap);
-        mFuzzyClock.draw(c);
         // build onClick intent
         Intent intent = new Intent(mContext, FuzzyWidgetSettings.class);
         intent.setAction(String.format(Locale.US, "dummy_%d", id));

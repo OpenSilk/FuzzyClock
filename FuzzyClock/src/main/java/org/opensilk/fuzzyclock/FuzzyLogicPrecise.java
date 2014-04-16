@@ -33,8 +33,7 @@ public class FuzzyLogicPrecise extends FuzzyLogic {
     }
 
     public long getNextIntervalMilli() {
-        long nextMilli = 0;
-        nextMilli += (mMinutes + 1) * 60000;
+        long nextMilli = 60000;
         nextMilli -= mCalendar.get(Calendar.SECOND) * 1000;
         return nextMilli;
     }

@@ -85,7 +85,7 @@ public class FuzzyWidgetService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // No action means we want to reinit everything
-        if (intent.getAction() == null) {
+        if (intent == null || intent.getAction() == null) {
             mHandler.sendEmptyMessage(UPDATE_SETTINGS);
             mHandler.sendMessage(mHandler.obtainMessage(UPDATE_ALL_WIDGETS, startId));
         // Update the specified widget

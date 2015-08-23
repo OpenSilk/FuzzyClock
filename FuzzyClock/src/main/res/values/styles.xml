@@ -19,15 +19,11 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo">
-        <item name="android:actionBarStyle">@style/ActionBarTheme</item>
+    <style name="AppTheme" parent="android:Theme.DeviceDefault">
+
     </style>
 
-    <style name="ActionBarTheme" parent="android:Widget.Holo.ActionBar">
-        <item name="android:icon">@drawable/ic_action_tick_white</item>
-    </style>
-
-    <style name="AppThemeFullScreen" parent="android:Theme.Holo.NoActionBar.Fullscreen">
+    <style name="AppThemeFullScreen" parent="android:Theme.DeviceDefault.NoActionBar.Fullscreen">
 
     </style>
 

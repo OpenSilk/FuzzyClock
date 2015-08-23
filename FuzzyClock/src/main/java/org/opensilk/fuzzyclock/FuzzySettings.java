@@ -17,6 +17,7 @@
  */
 package org.opensilk.fuzzyclock;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -25,9 +26,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +44,6 @@ abstract class FuzzySettings extends FragmentActivity {
     private PrefsPagerAdapter mPrefsPagerAdapter;
     private ViewPager mStyleViewPager;
     private ViewPager mPrefsViewPager;
-
-    //Ad
-    protected AdView mAdView;
 
 
     /**
@@ -79,32 +74,29 @@ abstract class FuzzySettings extends FragmentActivity {
         mStyleViewPager = (ViewPager) findViewById(R.id.style_pager);
         mStyleViewPager.setAdapter(mStylePagerAdapter);
         mStyleViewPager.setOffscreenPageLimit(mStylePagerAdapter.getCount() - 1);
-        mStyleViewPager.setOnPageChangeListener(mStylePageChangeListener);
+        mStyleViewPager.addOnPageChangeListener(mStylePageChangeListener);
 
         // Init pref fragments
         mPrefsPagerAdapter = new PrefsPagerAdapter(getSupportFragmentManager());
         mPrefsViewPager = (ViewPager) findViewById(R.id.prefs_pager);
         mPrefsViewPager.setAdapter(mPrefsPagerAdapter);
         mPrefsViewPager.setOffscreenPageLimit(mPrefsPagerAdapter.getCount() - 1);
-        mPrefsViewPager.setOnPageChangeListener(mPrefPageChangeListener);
-
-        // Init adview
-        mAdView = (AdView) findViewById(R.id.bottom_ad);
-        AdRequest.Builder adBuilder = new AdRequest.Builder();
-        adBuilder.addTestDevice("279CD53DED2F9D5F30D63B1F7C6B3619");
-        adBuilder.addTestDevice("6A1872C79991C9D853AE7417F26D0447");
-        mAdView.loadAd(adBuilder.build());
+        mPrefsViewPager.addOnPageChangeListener(mPrefPageChangeListener);
 
         // Init action bar
-        getActionBar().setIcon(R.drawable.ic_action_tick_white);
-        getActionBar().setHomeButtonEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setHomeAsUpIndicator(R.drawable.ic_done_white_36dp);
+        } else {
+            getActionBar().setHomeButtonEnabled(true);
+            getActionBar().setIcon(R.drawable.ic_done_white_36dp);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mPrefChangeListeners.clear();
-        mAdView.destroy();
     }
 
     @Override
@@ -112,14 +104,12 @@ abstract class FuzzySettings extends FragmentActivity {
         super.onResume();
         mPrefsViewPager.setCurrentItem(0);
         mStyleViewPager.setCurrentItem(mFuzzyPrefs.clockStyle);
-        mAdView.resume();
     }
 
     @Override
     protected void onPause() {
         mFuzzyPrefs.save();
         super.onPause();
-        mAdView.pause();
     }
 
     @Override

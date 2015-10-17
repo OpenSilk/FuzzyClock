@@ -201,17 +201,17 @@ public class FuzzyClockView extends ViewGroup {
                 // left
                 mX += 0;
                 // top
-                mY += 0;
+                mY = getMeasuredHeight()/2 - getChildHeight(mTimeDisplayMinutes)/2;
 
                 // end of minutes
                 sX += getChildWidth(mTimeDisplayMinutes);
                 // top
-                sY += 0;
+                sY = getMeasuredHeight()/2 - getChildHeight(mTimeDisplaySeparator)/2;
 
                 // end of minutes + separator
                 hX += sX + getChildWidth(mTimeDisplaySeparator);
                 // top
-                hY += 0;
+                hY = getMeasuredHeight()/2 - getChildHeight(mTimeDisplayHours)/2;
                 break;
         }
         mTimeDisplayMinutes.layout(mX, mY, mX + getChildWidth(mTimeDisplayMinutes), mY + getChildHeight(mTimeDisplayMinutes));

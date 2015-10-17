@@ -4,7 +4,7 @@ apply plugin: 'com.jakewharton.hugo'
 
 def versionMajor = 0
 def versionMinor = 1
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 0 // bump for dogfood builds, public betas, etc.
 
 assert(versionMinor < 100) // Double digits
@@ -12,8 +12,8 @@ assert(versionPatch < 100) // Double digits
 assert(versionBuild < 100) // Double digits
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "23.0.0"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         minSdkVersion 16
@@ -68,6 +68,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:23.0.0'
+    compile 'com.android.support:support-v4:23.1.0'
     compile 'com.larswerkman:HoloColorPicker:1.4'
 }

@@ -25,7 +25,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +35,11 @@ abstract class FuzzySettings extends FragmentActivity {
 
     protected FuzzyPrefs mFuzzyPrefs;
 
-    //Container
-    private FrameLayout mRoot;
-
     //View pager
     private StylePagerAdapter mStylePagerAdapter;
     private PrefsPagerAdapter mPrefsPagerAdapter;
     private ViewPager mStyleViewPager;
     private ViewPager mPrefsViewPager;
-
 
     /**
      * Style fragments register with this for callbacks from the pref fragments
@@ -63,11 +58,7 @@ abstract class FuzzySettings extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set base layout
         setContentView(R.layout.fuzzy_settings_base);
-        mRoot = (FrameLayout) findViewById(R.id.base);
-        // Inflate the real settings into the base layout
-        mRoot.addView(getLayoutInflater().inflate(R.layout.fuzzy_settings, mRoot, false));
 
         // Init style fragments
         mStylePagerAdapter = new StylePagerAdapter(getSupportFragmentManager());

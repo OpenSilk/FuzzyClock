@@ -19,7 +19,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:minHeight="@dimen/settings_min_height_land">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/style_pager"
